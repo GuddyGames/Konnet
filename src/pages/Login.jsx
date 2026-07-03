@@ -88,7 +88,7 @@ export default function Login() {
       </div>
 
       <p className="text-xs text-gray-400 mt-6 text-center">
-        Try: <span className="font-mono">amara.osei</span> / <span className="font-mono">amara123</span>
+        Try: <span className="font-mono">Guddie Technology</span>
       </p>
       <Loader isLoading={loading} />
     </div>
