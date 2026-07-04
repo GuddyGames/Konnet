@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { getUnreadNotifCount } from '../../utils/storage';
 import { useUser } from '../../context/UserContext';
 import GuddyAiChat from '../common/GuddyAiChat';
 
+
 export default function TopNav({ navigate }) {
-  const { darkMode, toggleDarkMode } = useUser();
+  const { darkMode, toggleDarkMode, currentUser } = useUser();
   const [aiOpen, setAiOpen] = useState(false);
+  const unreadNotifs = getUnreadNotifCount(currentUser?.id);
 
   return (
     <>
@@ -22,12 +25,15 @@ export default function TopNav({ navigate }) {
           {/* Notifications */}
           <button onClick={() => navigate('notifications')} className="relative">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-gray-800 dark:text-gray-200">
-              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" />
+              {unreadNotifs > 0 && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />
+              )}
             </svg>
           </button>
 
           {/* Messages */}
-          <button onClick={() => navigate('messages')}>
+          <button onClick={() => navigate('messages')} className="relative">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-gray-800 dark:text-gray-200">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
             </svg>

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useUser } from '../../context/UserContext';
-import { storage, KEYS } from '../../utils/storage';
+import { storage, KEYS, addNotification } from '../../utils/storage';
 import { formatTime, getGradient, genId } from '../../utils/helpers';
 import Avatar from '../common/Avatar';
 
@@ -44,6 +44,7 @@ export default function PostCard({ post, navigate, onUpdate }) {
 
   const addComment = () => {
     if (!commentText.trim()) return;
+    addNotification(author.id, { type: 'comment', fromID: currentUser.id, postId: post.id, text: newComment.text });
     const newComment = { id: genId(), authorId: currentUser.id, text: commentText.trim(), timestamp: Date.now() };
     const posts = storage.get(KEYS.POSTS) || [];
     const updated = posts.map(p =>
@@ -99,7 +100,19 @@ export default function PostCard({ post, navigate, onUpdate }) {
             <button onClick={() => setShowComments(s => !s)}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
             </button>
-            <button>
+            <button onClick={async () => {
+              const url = `${window.location.origin}?post=${post.id} `;
+              try {
+                if (navigator.share) {
+                  await navigator.share({ title: `Check out this post on Konnet`, url });
+                } else {
+                  await navigator.clipboard.writeText(url);
+                  alert('Link copied!');
+                }
+              } catch (err) {
+                console.error('Share failed: ', err);
+              }
+            }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="1.8"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           </div>

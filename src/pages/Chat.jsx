@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { storage, KEYS } from '../utils/storage';
+import { storage, KEYS, addNotification} from '../utils/storage';
 import { useUser } from '../context/UserContext';
 import { genId, formatTime } from '../utils/helpers';
 import Avatar from '../components/common/Avatar';
@@ -25,12 +25,13 @@ export default function Chat({ conversationId, navigate }) {
   const send = () => {
     if (!input.trim() || !convo) return;
     const msg = { id: genId(), fromId: currentUser.id, text: input.trim(), timestamp: Date.now() };
-    const all = storage.get(KEYS.CONVERSATIONS) || [];
+    const all = storage.get(KEYS.CONVERSATIONS, ) || [];
     const updated = all.map(c => {
       if (c.id !== convo.id) return c;
       return {...c, messages: [...(c.messages || []), msg], lastMessage: msg.text, lastTimestamp: msg.timestamp };
     });
     storage.set(KEYS.CONVERSATIONS, updated);
+    addNotification(other.id, { type: 'message', fromId: currentUser.id });
     setConvo(prev => ({...prev, messages: [...(prev.messages || []), msg] }));
     setInput('');
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
@@ -70,7 +71,7 @@ export default function Chat({ conversationId, navigate }) {
       <div className='fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm px-4 py-3 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700'>
         <div className="flex items-center gap-2">
           <input
-            Value={input}
+            value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && send()}
             placeholder="Message..."

@@ -10,7 +10,7 @@ export default function Notifications({ navigate }) {
 
   useEffect(() => {
     const all = storage.get(KEYS.NOTIFICATIONS) || [];
-    const mine = all.filter(n => n.toId === currentUser?.id || !n.toId);
+    const mine = all.filter(n => n.toId === currentUser?.id);
     setNotifs(mine.sort((a, b) => b.timestamp - a.timestamp));
 
     // Mark all as read

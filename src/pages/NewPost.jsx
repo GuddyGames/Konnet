@@ -1,40 +1,50 @@
 import { useState } from 'react';
 import { useUser } from '../context/UserContext';
-import { getPosts, savePosts, getUsers, saveUsers, genId } from '../utils/storage';
+import { getPosts, savePosts, getUsers, saveUsers, addNotification } from '../utils/storage';
+import { genId, fileToBase64 } from '../utils/helpers';
 import ImageUpload from '../components/common/ImageUpload';
 import Loader from '../components/common/Loader';
 
-export default function NewPost() {
-  const { user, addPost } = useUser();
+export default function NewPost({navigate, goBack, loading}) {
+  const { currentUser } = useUser();
   const [caption, setCaption] = useState('');
   const [media, setMedia] = useState('');
 
   const handleShare = () => {
-    if (!media) return;
+    if (!caption.trim() && !media) {
+      alert('Please add a caption or image. ');
+      return;
+    }
     const newPost = {
       id: genId(),
-      author: user.username,
-      media,
+      authorId: currentUser.id,
+      image: media,
       caption,
       likes: [],
       comments: [],
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      gradientIndex: Math.floor(Math.random() * 6),
     };
     const posts = getPosts();
-    posts[newPost.id] = newPost;
+    posts.push(newPost);
     savePosts(posts);
     // update user's posts
     const users = getUsers();
-    users[user.username].posts.push(newPost.id);
+    if (!Array.isArray(users[currentUser.username].posts)) {
+      users[currentUser.username].posts = [];
+    }
+    users[currentUser.username].posts.push(newPost.id);
     saveUsers(users);
-    addPost(newPost);
-    navigate('/');
+
+    navigate('home');
   };
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <div className="flex items-center gap-6 mb-4"></div>
-      <h2 className="text-xl font-bold mb-4">New Post</h2>
+      <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between">
+      <h2 className="font-bold font-poppins text-gray-900 dark:text-white">New Post</h2>
+        <button onClick={goBack} className=" text-gray-600 dark:text-gray-400 font-semibold">Cancel</button> 
+        </div>
       <ImageUpload onUpload={setMedia} accept="image/*,video/*" />
       {media && <img src={media} alt="Preview" className="w-full max-h-96 object-contain my-4" />}
       <textarea
@@ -46,11 +56,12 @@ export default function NewPost() {
       />
       <button
         onClick={handleShare}
-        disabled={!media}
+        disabled={loading}
         className="w-full bg-blue-500 py-2 rounded-lg mt-4 font-semibold disabled:opacity-50"
       >
-        Share Post
+        {loading ? '...' : ' Share Post'}
       </button>
-    </div>
+      </div>
+      
   );
 }

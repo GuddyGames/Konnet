@@ -1,8 +1,3 @@
-
-
-
-
-
 // Generate unique ID
 export const genId = () => `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
@@ -46,3 +41,6 @@ export const fileToBase64 = (file) => new Promise((resolve, reject) => {
   reader.onerror = reject;
   reader.readAsDataURL(file);
 });
+
+
+

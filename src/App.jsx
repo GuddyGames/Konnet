@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from './context/UserContext';
 import { seedData } from './utils/seed';
-import { storage, KEYS } from './utils/storage';
+import { storage, KEYS} from './utils/storage';
 
 
 // Pages
@@ -37,17 +37,15 @@ export default function App() {
   // Simple navigate function
   // Usage: navigate('home') | navigate('profile/username') | navigate('post/postId')
   const navigate = (path) => {
-    const [name, ...rest] = path.split('/');
-    setPage({ name, params: { id: rest.join('/') } });
-    window.scrollTo(0, 0);
     setHistory(h => [...h, page]);
+    const [name, ...rest] = path.split('/');
     setPage({ name, params: { id: rest.join('/') } });
     window.scrollTo(0, 0);
   };
 
   const goBack = () => {
     setHistory(h => {
-      if (h.length === 0) return h;
+      if (h.length === 0) { setPage({ name: 'home', params: {} }); return h; }
       setPage(h[h.length - 1]);
       return h.slice(0, -1);
     });
@@ -67,7 +65,7 @@ export default function App() {
       {name === 'profile' && <Profile username={params.id} navigate={navigate} />}
       {name === 'edit-profile' && <EditProfile navigate={navigate} />}
       {name === 'messages' && <Messages navigate={navigate} />}
-      {name === 'chat' && <Chat conversationId={chat.id} navigate={navigate} />}
+      {name === 'chat' && <Chat conversationId={params.id} navigate={navigate} />}
       {name === 'notifications' && <Notifications navigate={navigate} />}
       {name === 'post' && <PostDetail postId={params.id} navigate={navigate} />}
       {name === 'new-story' && <NewStory navigate={navigate} />}

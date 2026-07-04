@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from 'react';
-import { storage, KEYS } from '../utils/storage';
+import { storage, KEYS, addNotification } from '../utils/storage';
 import { genId, getAvatarColor } from '../utils/helpers';
 import Loader from '../components/common/Loader';
 
@@ -22,7 +22,7 @@ export const UserProvider = ({ children }) => {
     }
     const normalizedUsername = username.trim().toLowerCase();
     const users = storage.get(KEYS.USERS) || {};
-    if (users[username]) return { error: 'Username already taken.' };
+    if (users[normalizedUsername]) return { error: 'Username already taken.' };
 
     const newUser = {
       id: genId(),
@@ -98,6 +98,7 @@ export const UserProvider = ({ children }) => {
       targetEntry.followers = targetEntry.followers.filter(id => id !== me.id);
     } else {
       me.following.push(targetUserId);
+      addNotification(targetEntry.id, { type: 'follow', fromId: me.id });
       targetEntry.followers.push(me.id);
     }
     users[me.username] = me;

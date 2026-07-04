@@ -22,9 +22,9 @@ const SEED_STORIES = [
 ];
 
 const SEED_NOTIFICATIONS = [
-  { id: 'n1', type: 'like', fromId: 'u2', postId: 'p1', timestamp: Date.now() - 120000, read: false },
-  { id: 'n2', type: 'follow', fromId: 'u3', timestamp: Date.now() - 3600000, read: false },
-  { id: 'n3', type: 'comment', fromId: 'u1', postId: 'p2', text: 'Great point!', timestamp: Date.now() - 7200000, read: true },
+  { id: 'n1', toId: 'u1', type: 'like', fromId: 'u2', postId: 'p1', timestamp: Date.now() - 120000, read: false },
+  { id: 'n2', toId: 'u1', type: 'follow', fromId: 'u3', timestamp: Date.now() - 3600000, read: false },
+  { id: 'n3', toId: 'u1', type: 'comment', fromId: 'u1', postId: 'p2', text: 'Great point!', timestamp: Date.now() - 7200000, read: true },
 ];
 
 const SEED_CONVERSATIONS = [

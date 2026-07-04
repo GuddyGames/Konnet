@@ -1,6 +1,7 @@
-import { useUser } from '../../context/UserContext';
+import { useUser} from '../../context/UserContext';
 import { startConversation } from '../../utils/storage';
 import Avatar from '../common/Avatar';
+
 
 export default function ProfileHeader({ user, posts, navigate, onUpdate }) {
   const { currentUser, toggleFollow } = useUser();
@@ -56,7 +57,11 @@ export default function ProfileHeader({ user, posts, navigate, onUpdate }) {
             Edit Profile
           </button>
           <button
-            onClick={() => navigate('home')}
+            onClick={async () => {
+              const url = `${window.location.origin}?profile=${user.username}`;
+              if (navigator.share) await navigator.share({ title: `${user.username} on Konnet`, url });
+              else { await navigator.clipboard.writeText(url); alert('Profile link copied!'); }
+            }}
             className="flex-1 py-1.5 rounded-lg border border-gray-300 dark:border-slate-600 text-sm font-semibold text-gray-800 dark:text-white"
           >
             Share Profile
@@ -73,8 +78,11 @@ export default function ProfileHeader({ user, posts, navigate, onUpdate }) {
             }`}
           >
             {isFollowing ? 'Following' : 'Follow'}
-          </button>
-          <button   className="flex-1 py-1.5 rounded-lg border border-gray-300 dark:border-slate-600 text-sm font-semibold text-gray-800 dark:text-white">
+            </button>
+          <button   onClick={() => {
+              const convoId = startConversation(currentUser.id, user.id);
+              navigate(`chat/${convoId}`);
+          }} className="flex-1 py-1.5 rounded-lg border border-gray-300 dark:border-slate-600 text-sm font-semibold text-gray-800 dark:text-white">
             Message
           </button>
         </div>

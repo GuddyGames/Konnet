@@ -1,3 +1,4 @@
+import { genId } from "./helpers";
 // Keys for localStorage
 export const KEYS = {
   USERS: 'konnet_users',
@@ -26,9 +27,6 @@ export const storage = {
   remove: (key) => localStorage.removeItem(key),
 };
 
-export const genId = () => {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
-};
 
 export const getPosts = () => {
     return storage.get(KEYS.POSTS) || [];
@@ -56,22 +54,23 @@ export const getUsers = () => {
     return storage.get(KEYS.USERS) || [];
 };
 
-export const saveUsers = (user) => {
-    const users = getUsers();
-    const index = users.findIndex((u) => u.id === user.id);
-
-    if (index >= 0) {
-        users[index] = { ...users[index], ...user };
-    } else {
-        users.push({ id: user.id || genId(), ...user });
-    }
-
-    saveUser(users);
-    return user;
+export const saveUsers = (users) => {
+  storage.set(KEYS.USERS, users);
+  return users;
 };
 
 export const getConversations = () => storage.get(KEYS.CONVERSATIONS) || [];
 export const saveConversations = (convos) => storage.set(KEYS.CONVERSATIONS, convos); 
+
+export const searchUsers = (query) => {
+  const users = storage.get(KEYS.USERS) || {};
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return Object.values(users).filter(
+    u => u.username.includes(q) || u.name.toLowerCase().includes(q)
+  );
+};
+
 
 export const startConversation = (myId, otherId) => {
   const all = getConversations();
@@ -91,6 +90,21 @@ export const startConversation = (myId, otherId) => {
   return newConvo.id;
 };
 
+export const addNotification = (toId, notif) => {
+  if (toId === notif.fromId) return;
+  const all = storage.get(KEYS.NOTIFICATIONS) || [];
+  const newNotif = { id: genId(), toId, read: false, timestamp: Date.now(), ...notif };
+  storage.set(KEYS.NOTIFICATIONS, [newNotif, ...all]);
+};
 
+export const getUnreadNotifCount = (userId) => {
+  const all = storage.get(KEYS.NOTIFICATIONS) || [];
+  return all.filter(n => n.toId === userId && !n.read).length;
+};
+
+export const getUnreadMessageCount = (userId) => {
+  const all = storage.get(KEYS.NOTIFICATIONS) || [];
+  return all.filter(c => c.participants.includes(userId) && c.lastReadBy?.[userId] !== c.lastTimestamp).length;
+};
 
 
