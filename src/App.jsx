@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useUser } from './context/UserContext';
 import { seedData } from './utils/seed';
-import { storage, KEYS} from './utils/storage';
+import { storage, KEYS } from './utils/storage';
+
 
 
 // Pages
@@ -24,7 +25,7 @@ import Settings from './pages/Settings';
 seedData();
 
 export default function App() {
-  const { currentUser, darkMode } = useUser();
+  const { currentUser, darkMode, authLoading } = useUser();
   const [page, setPage] = useState({ name: 'home', params: {} });
   const [history, setHistory] = useState([]);
 
@@ -33,6 +34,14 @@ export default function App() {
     document.documentElement.classList.toggle('dark', darkMode);
   }, [darkMode]);
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-900">
+        <Loader isLoading={true} />
+      </div>
+    ); 
+  }
+  if (authLoading) return <Login />;
 
   // Simple navigate function
   // Usage: navigate('home') | navigate('profile/username') | navigate('post/postId')

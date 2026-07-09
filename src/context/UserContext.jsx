@@ -1,7 +1,11 @@
-import { createContext, useContext, useState } from 'react';
-import { storage, KEYS, addNotification } from '../utils/storage';
-import { genId, getAvatarColor } from '../utils/helpers';
-import Loader from '../components/common/Loader';
+import { createContext, useContext, useState, useEffect } from 'react';
+import {
+  createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged,
+} from 'firebase/auth';
+import {doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, arrayUnion, arrayRemove, } from 'firebase/firestore';
+import { auth, db } from '../utils/firebase';
+import { getAvatarColor } from '../utils/helpers';
 
 const UserContext = createContext(null);
 
@@ -11,136 +15,152 @@ export const useUser = () => {
   return ctx;
 };
 
-export const UserProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(() => storage.get(KEYS.CURRENT_USER));
-  const [darkMode, setDarkMode] = useState(() => storage.get(KEYS.DARK_MODE) || false);
+const usernameToEmail = (username) => `${username.trim().toLowerCase()}@konnet.app`;
 
-  // Sign up — creates a new account
-  const signup = (username, password, name) => {
+export const UserProvider = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('konnet_darkmode') === 'true');
+
+  // Watch Firebase auth state; load the matching Firestore profile
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+        if (userDoc.exists()) {
+          setCurrentUser({ id: firebaseUser.uid, ...userDoc.data() });
+        }
+      } else {
+        setCurrentUser(null);
+      }
+      setAuthLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  // Sign up — creates a Firebase Auth account + Firestore profile
+  const signup = async (username, password, name) => {
     if (!username.trim() || !password.trim() || !name.trim()) {
       return { error: 'Please fill in all fields.' };
     }
     const normalizedUsername = username.trim().toLowerCase();
-    const users = storage.get(KEYS.USERS) || {};
-    if (users[normalizedUsername]) return { error: 'Username already taken.' };
 
-    const newUser = {
-      id: genId(),
-      username: normalizedUsername,
-      password,
-      name: name.trim(),
-      bio: '',
-      avatarColor: getAvatarColor(username),
-      avatarImage: null,
-      followers: [],
-      following: [],
-      timestamp: Date.now(),
-    };
-    users[normalizedUsername] = newUser;
-    storage.set(KEYS.USERS, users);
+    // Check username isn't already taken
+    const existing = await getDocs(query(collection(db, 'users'), where('username', '==', normalizedUsername)));
+    if (!existing.empty) return { error: 'Username already taken.' };
 
-    // Auto login after signup
-    const safeUser = { ...newUser };
-    delete safeUser.password;
-    setCurrentUser(safeUser);
-    storage.set(KEYS.CURRENT_USER, safeUser);
-    return { success: true };
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, usernameToEmail(normalizedUsername), password);
+      const newUser = {
+        username: normalizedUsername,
+        name: name.trim(),
+        bio: '',
+        avatarColor: getAvatarColor(username),
+        avatarImage: null,
+        followers: [],
+        following: [],
+        timestamp: Date.now(),
+      };
+      await setDoc(doc(db, 'users', cred.user.uid), newUser);
+      setCurrentUser({ id: cred.user.uid, ...newUser });
+      return { success: true };
+    } catch (err) {
+      return { error: err.message };
+    }
   };
 
-  // Login — checks credentials
-  const login = (username, password) => {
-    const users = storage.get(KEYS.USERS) || {};
-    const user = users[username.trim().toLowerCase()];
-    if (!user || user.password !== password) {
+  // Login with username + password
+  const login = async (username, password) => {
+    try {
+      await signInWithEmailAndPassword(auth, usernameToEmail(username), password);
+      return { success: true };
+    } catch (err) {
       return { error: 'Invalid username or password.' };
     }
-    const safeUser = { ...user };
-    delete safeUser.password;
-    setCurrentUser(safeUser);
-    storage.set(KEYS.CURRENT_USER, safeUser);
-    return { success: true };
   };
 
+  // Login with Google
+  const loginWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const userRef = doc(db, 'users', result.user.uid);
+      const existing = await getDoc(userRef);
 
-  // Logout
-  const logout = () => {
-    setCurrentUser(null);
-    storage.remove(KEYS.CURRENT_USER);
-  };
-  
-  // Update profile (name, bio, avatarImage)
-  const updateProfile = (updates) => {
-    const users = storage.get(KEYS.USERS) || {};
-    const user = users[currentUser.username];
-    if (!user) return { error: 'User not found.' };
-
-    const updatedUser = { ...user, ...updates };
-    users[currentUser.username] = updatedUser;
-    storage.set(KEYS.USERS, users);
-
-    const safeUser = { ...updatedUser };
-    delete safeUser.password;
-    setCurrentUser(safeUser);
-    storage.set(KEYS.CURRENT_USER, safeUser);
-    return { success: true };
-  };
-
-  // Follow / unfollow a user
-  const toggleFollow = (targetUserId) => {
-    const users = storage.get(KEYS.USERS) || {};
-    const me = users[currentUser.username];
-    const targetEntry = Object.values(users).find(u => u.id === targetUserId);
-    if (!me || !targetEntry) return;
-
-    const isFollowing = me.following.includes(targetUserId);
-    if (isFollowing) {
-      me.following = me.following.filter(id => id !== targetUserId);
-      targetEntry.followers = targetEntry.followers.filter(id => id !== me.id);
-    } else {
-      me.following.push(targetUserId);
-      addNotification(targetEntry.id, { type: 'follow', fromId: me.id });
-      targetEntry.followers.push(me.id);
+      if (!existing.exists()) {
+        // First-time Google sign-in: create a Firestore profile
+        const baseUsername = (result.user.email || 'user').split('@')[0].toLowerCase();
+        const newUser = {
+          username: baseUsername,
+          name: result.user.displayName || baseUsername,
+          bio: '',
+          avatarColor: getAvatarColor(baseUsername),
+          avatarImage: result.user.photoURL || null,
+          followers: [],
+          following: [],
+          timestamp: Date.now(),
+        };
+        await setDoc(userRef, newUser);
+      }
+      return { success: true };
+    } catch (err) {
+      return { error: err.message };
     }
-    users[me.username] = me;
-    users[targetEntry.username] = targetEntry;
-    storage.set(KEYS.USERS, users);
-
-    const safeUser = { ...me };
-    delete safeUser.password;
-    setCurrentUser(safeUser);
-    storage.set(KEYS.CURRENT_USER, safeUser);
   };
 
-  // Get user by id or username
-  const getUserById = (id) => {
-    const users = storage.get(KEYS.USERS) || {};
-    return Object.values(users).find(u => u.id === id) || null;
+  const logout = () => signOut(auth);
+
+  const updateProfile = async (updates) => {
+    if (!currentUser) return { error: 'Not logged in.' };
+    await updateDoc(doc(db, 'users', currentUser.id), updates);
+    setCurrentUser(prev => ({ ...prev, ...updates }));
+    return { success: true };
   };
 
-  const getUserByUsername = (username) => {
-    const users = storage.get(KEYS.USERS) || {};
-    return users[username.toLowerCase()] || null;
+  const toggleFollow = async (targetUserId) => {
+    if (!currentUser) return;
+    const isFollowing = currentUser.following?.includes(targetUserId);
+    const meRef = doc(db, 'users', currentUser.id);
+    const targetRef = doc(db, 'users', targetUserId);
+
+    if (isFollowing) {
+      await updateDoc(meRef, { following: arrayRemove(targetUserId) });
+      await updateDoc(targetRef, { followers: arrayRemove(currentUser.id) });
+      setCurrentUser(prev => ({ ...prev, following: prev.following.filter(id => id !== targetUserId) }));
+    } else {
+      await updateDoc(meRef, { following: arrayUnion(targetUserId) });
+      await updateDoc(targetRef, { followers: arrayUnion(currentUser.id) });
+      setCurrentUser(prev => ({ ...prev, following: [...(prev.following || []), targetUserId] }));
+    }
   };
 
-  // Toggle dark mode
+  const getUserById = async (id) => {
+    const snap = await getDoc(doc(db, 'users', id));
+    return snap.exists() ? { id, ...snap.data() } : null;
+  };
+
+  const getUserByUsername = async (username) => {
+    const q = query(collection(db, 'users'), where('username', '==', username.toLowerCase()));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    const d = snap.docs[0];
+    return { id: d.id, ...d.data() };
+  };
+
   const toggleDarkMode = () => {
     const next = !darkMode;
     setDarkMode(next);
-    storage.set(KEYS.DARK_MODE, next);
+    localStorage.setItem('konnet_darkmode', String(next));
     document.documentElement.classList.toggle('dark', next);
   };
 
-    return (
-  
-
-
+  return (
     <UserContext.Provider value={{
-      currentUser, darkMode,
-      signup, login, logout, updateProfile, toggleFollow,
+      currentUser, darkMode, authLoading,
+      signup, login, loginWithGoogle, logout, updateProfile, toggleFollow,
       getUserById, getUserByUsername, toggleDarkMode,
     }}>
       {children}
-    </UserContext.Provider>  
-
+    </UserContext.Provider>
   );
 };

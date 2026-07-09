@@ -9,13 +9,17 @@ export default function Feed({ navigate }) {
 
   const loadPosts = () => {
     const all = storage.get(KEYS.POSTS) || [];
+    console.log('ALL POSTS', all.length, all);
+    console.log('CURRENT USER ID:', currentUser?.id);
     // Show posts from people you follow + your own, newest first
     const filtered = all.filter(p =>
       p.authorId === currentUser?.id ||
       currentUser?.following?.includes(p.authorId)
     );
+    console.log('FILTERED:', filtered.length, filtered);
     // If following nobody, show all posts
     const toShow = filtered.length > 0 ? filtered : all;
+    console.log('TO SHOW:', toShow.length);
     setPosts([...toShow].sort((a, b) => b.timestamp - a.timestamp));
   };
 

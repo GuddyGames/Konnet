@@ -11,10 +11,13 @@ export default function NewPost({navigate, goBack, loading}) {
   const [media, setMedia] = useState('');
 
   const handleShare = () => {
+    console.log('SHARE CLICKED')
     if (!caption.trim() && !media) {
+      console.log('BLOCKED: no caption or media', { caption, media });
       alert('Please add a caption or image. ');
       return;
     }
+    console.log('PASSED GUARD, buliding post...');
     const newPost = {
       id: genId(),
       authorId: currentUser.id,
@@ -25,9 +28,11 @@ export default function NewPost({navigate, goBack, loading}) {
       timestamp: Date.now(),
       gradientIndex: Math.floor(Math.random() * 6),
     };
+    console.log('newPost built:', newPost);
     const posts = getPosts();
     posts.push(newPost);
     savePosts(posts);
+    console.log('posts after save:', getPosts());
     // update user's posts
     const users = getUsers();
     if (!Array.isArray(users[currentUser.username].posts)) {
@@ -35,6 +40,7 @@ export default function NewPost({navigate, goBack, loading}) {
     }
     users[currentUser.username].posts.push(newPost.id);
     saveUsers(users);
+    console.log('DONE, navigating home');
 
     navigate('home');
   };
