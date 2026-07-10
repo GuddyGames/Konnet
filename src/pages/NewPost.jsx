@@ -1,16 +1,19 @@
 import { useState } from 'react';
+import { createPost } from '../utils/firestorePosts';
 import { useUser } from '../context/UserContext';
 import { getPosts, savePosts, getUsers, saveUsers, addNotification } from '../utils/storage';
 import { genId, fileToBase64 } from '../utils/helpers';
 import ImageUpload from '../components/common/ImageUpload';
 import Loader from '../components/common/Loader';
 
-export default function NewPost({navigate, goBack, loading}) {
+
+export default function NewPost({navigate, goBack}) {
   const { currentUser } = useUser();
   const [caption, setCaption] = useState('');
   const [media, setMedia] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleShare = () => {
+  const handleShare = async () => {
     console.log('SHARE CLICKED')
     if (!caption.trim() && !media) {
       console.log('BLOCKED: no caption or media', { caption, media });
@@ -18,31 +21,24 @@ export default function NewPost({navigate, goBack, loading}) {
       return;
     }
     console.log('PASSED GUARD, buliding post...');
-    const newPost = {
-      id: genId(),
-      authorId: currentUser.id,
-      image: media,
-      caption,
-      likes: [],
-      comments: [],
-      timestamp: Date.now(),
-      gradientIndex: Math.floor(Math.random() * 6),
-    };
-    console.log('newPost built:', newPost);
-    const posts = getPosts();
-    posts.push(newPost);
-    savePosts(posts);
-    console.log('posts after save:', getPosts());
-    // update user's posts
-    const users = getUsers();
-    if (!Array.isArray(users[currentUser.username].posts)) {
-      users[currentUser.username].posts = [];
+    setLoading(true);
+    try {
+      await createPost({
+        authorId: currentUser.id,
+        image: media || null,
+        caption: caption.trim(),
+        gradientIndex: Math.floor(Math.random() * 6),
+      });
+      console.log('navigating home')
+      navigate('home');
     }
-    users[currentUser.username].posts.push(newPost.id);
-    saveUsers(users);
-    console.log('DONE, navigating home');
-
-    navigate('home');
+    catch (err) {
+      console.error('Faild to create post:', err);
+      alert('Something went wrong. Please try again.');
+    }
+    finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,7 +47,7 @@ export default function NewPost({navigate, goBack, loading}) {
       <h2 className="font-bold font-poppins text-gray-900 dark:text-white">New Post</h2>
         <button onClick={goBack} className=" text-gray-600 dark:text-gray-400 font-semibold">Cancel</button> 
         </div>
-      <ImageUpload onUpload={setMedia} accept="image/*,video/*" />
+      <ImageUpload onImageSelect={(file, preview)=> setMedia(preview)} accept="image/*,video/*" />
       {media && <img src={media} alt="Preview" className="w-full max-h-96 object-contain my-4" />}
       <textarea
         value={caption}

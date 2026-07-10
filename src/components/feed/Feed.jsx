@@ -1,29 +1,29 @@
 import { useState, useEffect } from 'react';
-import { storage, KEYS } from '../../utils/storage';
+import { getAllPosts } from '../../utils/firestorePosts';
 import { useUser } from '../../context/UserContext';
 import PostCard from './PostCard';
 
 export default function Feed({ navigate }) {
   const { currentUser } = useUser();
   const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const loadPosts = () => {
-    const all = storage.get(KEYS.POSTS) || [];
-    console.log('ALL POSTS', all.length, all);
-    console.log('CURRENT USER ID:', currentUser?.id);
-    // Show posts from people you follow + your own, newest first
+  const loadPosts = async () => {
+    setLoading(true);
+    const all = await getAllPosts();
     const filtered = all.filter(p =>
       p.authorId === currentUser?.id ||
       currentUser?.following?.includes(p.authorId)
     );
-    console.log('FILTERED:', filtered.length, filtered);
-    // If following nobody, show all posts
-    const toShow = filtered.length > 0 ? filtered : all;
-    console.log('TO SHOW:', toShow.length);
-    setPosts([...toShow].sort((a, b) => b.timestamp - a.timestamp));
+    setPosts(filtered.length > 0 ? filtered : all);
+    setLoading(false);
   };
 
   useEffect(() => { loadPosts(); }, []);
+
+  if (loading) {
+    return <div className="flex justify-center py-20 text-gray-400">Loading posts...</div>;
+  }
 
   if (posts.length === 0) {
     return (
@@ -45,10 +45,3 @@ export default function Feed({ navigate }) {
     </div>
   );
 }
-
-
-
-
-
-
-

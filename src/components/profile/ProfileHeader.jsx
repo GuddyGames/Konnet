@@ -1,6 +1,7 @@
 import { useUser} from '../../context/UserContext';
 import { startConversation } from '../../utils/storage';
 import Avatar from '../common/Avatar';
+import Settings from '../../pages/Settings';
 
 
 export default function ProfileHeader({ user, posts, navigate, onUpdate }) {

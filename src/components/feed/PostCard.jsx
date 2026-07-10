@@ -1,14 +1,16 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useUser } from '../../context/UserContext';
 import { storage, KEYS, addNotification } from '../../utils/storage';
 import { formatTime, getGradient, genId } from '../../utils/helpers';
 import Avatar from '../common/Avatar';
+import { toggleLikePost, addCommentToPost } from '../../utils/firestorePosts';
 
 export default function PostCard({ post, navigate, onUpdate }) {
   const { currentUser, getUserById } = useUser();
-  const author = getUserById(post.authorId);
+  const [author , setAuthor] = useState(null);
   const isLiked = post.likes?.includes(currentUser?.id);
   const [liked, setLiked] = useState(isLiked);
+  const [commentAuthors, setCommentAuthors] = useState({});
   const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
   const [showHeart, setShowHeart] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -17,21 +19,35 @@ export default function PostCard({ post, navigate, onUpdate }) {
   const [saved, setSaved] = useState(false);
   const lastTap = useRef(0);
 
-  const toggleLike = () => {
-    const posts = storage.get(KEYS.POSTS) || [];
-    const updated = posts.map(p => {
-      if (p.id !== post.id) return p;
-      const newLikes = liked
-        ? (p.likes || []).filter(id => id !== currentUser.id)
-        : [...(p.likes || []), currentUser.id];
-      return { ...p, likes: newLikes };
-    });
-    storage.set(KEYS.POSTS, updated);
-    setLiked(!liked);
-    setLikeCount(c => liked ? c - 1 : c + 1);
-    onUpdate?.();
-  };
+  useEffect(() => {
+    getUserById(post.authorId).then(setAuthor);
+  }, [post.authorId]);
 
+  useEffect(() => {
+    const loadCommentAuthors = async () => {
+      const uniqueIds = [...new Set(comments.map(c => c.authorId))];
+      const entries = await Promise.all(
+        uniqueIds.map(async id => [id, await getUserById(id)])
+      );
+      setCommentAuthors(Object.fromEntries(entries));
+    };
+    if (comments.length > 0) loadCommentAuthors();
+  }, [comments]);
+
+  const toggleLike = async () => {
+    const wasLiked = liked;
+    setLiked(!wasLiked);
+    setLikeCount(c => wasLiked ? c - 1 : c + 1);
+    try {
+      await toggleLikePost(post.id, currentUser.id, wasLiked);
+      onUpdate?.();
+    }
+    catch (err) {
+      console.error('Failed to toggle like:', err);
+      setLiked(wasLiked);
+      setLikeCount(c => wasLiked ? c + 1 : c - 1);
+    }
+  };
   const handleDoubleTap = () => {
     const now = Date.now();
     if (now - lastTap.current < 300) {
@@ -42,18 +58,23 @@ export default function PostCard({ post, navigate, onUpdate }) {
     lastTap.current = now;
   };
 
-  const addComment = () => {
+  const addComment = async () => {
     if (!commentText.trim()) return;
-    addNotification(author.id, { type: 'comment', fromID: currentUser.id, postId: post.id, text: newComment.text });
-    const newComment = { id: genId(), authorId: currentUser.id, text: commentText.trim(), timestamp: Date.now() };
-    const posts = storage.get(KEYS.POSTS) || [];
-    const updated = posts.map(p =>
-      p.id === post.id ? { ...p, comments: [...(p.comments || []), newComment] } : p
-    );
-    storage.set(KEYS.POSTS, updated);
-    setComments(c => [...c, newComment]);
-    setCommentText('');
-    onUpdate?.();
+    const newComment = {
+      id: genId(),
+      authorId: currentUser.id,
+      text: commentText.trim(),
+      timestamp: Date.now()
+    };
+    try {
+      await addCommentToPost(post.id, newComment);
+      setComments(c => [...c, newComment]);
+      setCommentText('');
+      onUpdate?.();
+    }
+    catch (err) {
+      console.error('Failed to add comment:', err);
+    }
   };
 
   if (!author) return null;
@@ -141,7 +162,7 @@ export default function PostCard({ post, navigate, onUpdate }) {
         {showComments && (
           <div className="mt-2 space-y-1.5 animate-fadeSlideIn">
             {comments.map(c => {
-              const cAuthor = getUserById(c.authorId);
+              const cAuthor = commentAuthors[c.authorId];
               return (
                 <p key={c.id} className="text-sm text-gray-800 dark:text-gray-200">
                   <span className="font-semibold">{cAuthor?.username || 'user'}</span>{' '}{c.text}
