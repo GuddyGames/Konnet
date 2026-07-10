@@ -55,7 +55,7 @@ const ImageUpload = ({ onImageSelect, maxSizeMB = 5 }) => {
             onClick={handleRemove}
             className="absolute top-2 right-2 bg-black/70 text-white rounded-full w-7 h-7 flex items-center justify-center"
           >
-            ×
+            &times;
           </button>
         </div>
       )}

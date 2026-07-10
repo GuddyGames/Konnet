@@ -1,37 +1,43 @@
 import { useState, useEffect, useRef } from 'react';
 import { useUser } from '../../context/UserContext';
-import { storage, KEYS, addNotification } from '../../utils/storage';
 import { formatTime, getGradient, genId } from '../../utils/helpers';
-import Avatar from '../common/Avatar';
 import { toggleLikePost, addCommentToPost } from '../../utils/firestorePosts';
+import Avatar from '../common/Avatar';
 
 export default function PostCard({ post, navigate, onUpdate }) {
   const { currentUser, getUserById } = useUser();
-  const [author , setAuthor] = useState(null);
+  const [author, setAuthor] = useState(null);
+
   const isLiked = post.likes?.includes(currentUser?.id);
   const [liked, setLiked] = useState(isLiked);
-  const [commentAuthors, setCommentAuthors] = useState({});
   const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
   const [showHeart, setShowHeart] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState(post.comments || []);
+  const [commentAuthors, setCommentAuthors] = useState({});
   const [saved, setSaved] = useState(false);
   const lastTap = useRef(0);
 
+  // Load the post author's profile (async, since Firestore reads are Promises)
   useEffect(() => {
-    getUserById(post.authorId).then(setAuthor);
+    let active = true;
+    getUserById(post.authorId).then(u => { if (active) setAuthor(u); });
+    return () => { active = false; };
   }, [post.authorId]);
 
+  // Load profiles for anyone who has commented
   useEffect(() => {
+    let active = true;
     const loadCommentAuthors = async () => {
       const uniqueIds = [...new Set(comments.map(c => c.authorId))];
       const entries = await Promise.all(
         uniqueIds.map(async id => [id, await getUserById(id)])
       );
-      setCommentAuthors(Object.fromEntries(entries));
+      if (active) setCommentAuthors(Object.fromEntries(entries));
     };
     if (comments.length > 0) loadCommentAuthors();
+    return () => { active = false; };
   }, [comments]);
 
   const toggleLike = async () => {
@@ -41,13 +47,13 @@ export default function PostCard({ post, navigate, onUpdate }) {
     try {
       await toggleLikePost(post.id, currentUser.id, wasLiked);
       onUpdate?.();
-    }
-    catch (err) {
+    } catch (err) {
       console.error('Failed to toggle like:', err);
       setLiked(wasLiked);
       setLikeCount(c => wasLiked ? c + 1 : c - 1);
     }
   };
+
   const handleDoubleTap = () => {
     const now = Date.now();
     if (now - lastTap.current < 300) {
@@ -64,16 +70,29 @@ export default function PostCard({ post, navigate, onUpdate }) {
       id: genId(),
       authorId: currentUser.id,
       text: commentText.trim(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     try {
       await addCommentToPost(post.id, newComment);
       setComments(c => [...c, newComment]);
       setCommentText('');
       onUpdate?.();
-    }
-    catch (err) {
+    } catch (err) {
       console.error('Failed to add comment:', err);
+    }
+  };
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}?post=${post.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Check out this post on Konnet', url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        alert('Link copied!');
+      }
+    } catch (err) {
+      console.error('Share failed:', err);
     }
   };
 
@@ -89,10 +108,12 @@ export default function PostCard({ post, navigate, onUpdate }) {
           </div>
         </div>
         <div className="flex-1">
-          <p className="font-semibold text-sm text-gray-900 dark:text-white font-poppins cursor-pointer" onClick={() => navigate(`profile/${author.username}`)}>{author.username}</p>
+          <p className="font-semibold text-sm text-gray-900 dark:text-white font-poppins cursor-pointer" onClick={() => navigate(`profile/${author.username}`)}>
+            {author.username}
+          </p>
           <p className="text-xs text-gray-400">{formatTime(post.timestamp)}</p>
         </div>
-        <button className="text-gray-500">•••</button>
+        <button className="text-gray-500">&#8942;</button>
       </div>
 
       {/* Image */}
@@ -103,7 +124,7 @@ export default function PostCard({ post, navigate, onUpdate }) {
         }
         {showHeart && (
           <div className="absolute inset-0 flex items-center justify-center animate-heartPop pointer-events-none">
-            <span className="text-8xl">️</span>
+            <span className="text-8xl">&#10084;&#65039;</span>
           </div>
         )}
       </div>
@@ -114,31 +135,19 @@ export default function PostCard({ post, navigate, onUpdate }) {
           <div className="flex gap-4 flex-1">
             <button onClick={toggleLike} className="transition-transform active:scale-90">
               {liked
-                ? <svg width="24" height="24" viewBox="0 0 24 24" fill="#EF4444" stroke="#EF4444" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                : <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                ? <svg width="24" height="24" viewBox="0 0 24 24" fill="#EF4444" stroke="#EF4444" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                : <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
               }
             </button>
             <button onClick={() => setShowComments(s => !s)}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </button>
-            <button onClick={async () => {
-              const url = `${window.location.origin}?post=${post.id} `;
-              try {
-                if (navigator.share) {
-                  await navigator.share({ title: `Check out this post on Konnet`, url });
-                } else {
-                  await navigator.clipboard.writeText(url);
-                  alert('Link copied!');
-                }
-              } catch (err) {
-                console.error('Share failed: ', err);
-              }
-            }}>
+            <button onClick={handleShare}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="1.8"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           </div>
           <button onClick={() => setSaved(s => !s)}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           </button>
         </div>
 
@@ -165,7 +174,7 @@ export default function PostCard({ post, navigate, onUpdate }) {
               const cAuthor = commentAuthors[c.authorId];
               return (
                 <p key={c.id} className="text-sm text-gray-800 dark:text-gray-200">
-                  <span className="font-semibold">{cAuthor?.username || 'user'}</span>{' '}{c.text}
+                  <span className="font-semibold">{cAuthor?.username || 'user'}</span> {c.text}
                 </p>
               );
             })}
@@ -190,10 +199,3 @@ export default function PostCard({ post, navigate, onUpdate }) {
     </div>
   );
 }
-
-
-
-
-
-
-

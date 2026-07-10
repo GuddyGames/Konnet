@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUser } from './context/UserContext';
 import { seedData } from './utils/seed';
-import { storage, KEYS } from './utils/storage';
-
-
 
 // Pages
 import Login from './pages/Login';
@@ -18,10 +15,10 @@ import NewPost from './pages/NewPost';
 import NewStory from './pages/NewStory';
 import PostDetail from './pages/PostDetail';
 import Reels from './pages/Reels';
-import Loader from './components/common/Loader';
 import Settings from './pages/Settings';
+import Loader from './components/common/Loader';
 
-// Seed initial data on first load
+// Seed initial demo data (stories/notifications/conversations placeholders — not yet migrated to Firestore)
 seedData();
 
 export default function App() {
@@ -34,16 +31,7 @@ export default function App() {
     document.documentElement.classList.toggle('dark', darkMode);
   }, [darkMode]);
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-900">
-        <Loader isLoading={true} />
-      </div>
-    ); 
-  }
-  if (authLoading) return <Login />;
-
-  // Simple navigate function
+  // Navigate to a new page, remembering where we came from
   // Usage: navigate('home') | navigate('profile/username') | navigate('post/postId')
   const navigate = (path) => {
     setHistory(h => [...h, page]);
@@ -52,14 +40,28 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
+  // Go back to the previous page in history
   const goBack = () => {
     setHistory(h => {
-      if (h.length === 0) { setPage({ name: 'home', params: {} }); return h; }
+      if (h.length === 0) {
+        setPage({ name: 'home', params: {} });
+        return h;
+      }
       setPage(h[h.length - 1]);
       return h.slice(0, -1);
     });
     window.scrollTo(0, 0);
   };
+
+  // IMPORTANT: all hooks above this line, all conditional returns below.
+  // Firebase needs a moment on first load to check if a session already exists.
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-900">
+        <Loader isLoading={true} />
+      </div>
+    );
+  }
 
   if (!currentUser) return <Login />;
 
@@ -72,12 +74,12 @@ export default function App() {
       {name === 'new-post' && <NewPost navigate={navigate} goBack={goBack} />}
       {name === 'reels' && <Reels navigate={navigate} />}
       {name === 'profile' && <Profile username={params.id} navigate={navigate} />}
-      {name === 'edit-profile' && <EditProfile navigate={navigate} />}
+      {name === 'edit-profile' && <EditProfile navigate={navigate} goBack={goBack} />}
       {name === 'messages' && <Messages navigate={navigate} />}
       {name === 'chat' && <Chat conversationId={params.id} navigate={navigate} />}
       {name === 'notifications' && <Notifications navigate={navigate} />}
       {name === 'post' && <PostDetail postId={params.id} navigate={navigate} />}
-      {name === 'new-story' && <NewStory navigate={navigate} />}
+      {name === 'new-story' && <NewStory navigate={navigate} goBack={goBack} />}
       {name === 'settings' && <Settings navigate={navigate} goBack={goBack} />}
     </div>
   );

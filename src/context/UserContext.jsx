@@ -1,9 +1,17 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import {
-  createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged,
 } from 'firebase/auth';
-import {doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, arrayUnion, arrayRemove, } from 'firebase/firestore';
+import {
+  doc, getDoc, setDoc, updateDoc,
+  collection, query, where, getDocs,
+  arrayUnion, arrayRemove,
+} from 'firebase/firestore';
 import { auth, db } from '../utils/firebase';
 import { getAvatarColor } from '../utils/helpers';
 
@@ -15,6 +23,8 @@ export const useUser = () => {
   return ctx;
 };
 
+// Firebase Auth requires an email, so we turn usernames into a fake internal
+// email address behind the scenes. The user never sees or types this.
 const usernameToEmail = (username) => `${username.trim().toLowerCase()}@konnet.app`;
 
 export const UserProvider = ({ children }) => {
@@ -135,11 +145,13 @@ export const UserProvider = ({ children }) => {
   };
 
   const getUserById = async (id) => {
+    if (!id) return null;
     const snap = await getDoc(doc(db, 'users', id));
     return snap.exists() ? { id, ...snap.data() } : null;
   };
 
   const getUserByUsername = async (username) => {
+    if (!username) return null;
     const q = query(collection(db, 'users'), where('username', '==', username.toLowerCase()));
     const snap = await getDocs(q);
     if (snap.empty) return null;
