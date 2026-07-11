@@ -17,6 +17,8 @@ import PostDetail from './pages/PostDetail';
 import Reels from './pages/Reels';
 import Settings from './pages/Settings';
 import Loader from './components/common/Loader';
+import Notifications from './pages/Notifications';
+import NotificationToast from './components/common/NotificationToast';
 
 // Seed initial demo data (stories/notifications/conversations placeholders — not yet migrated to Firestore)
 seedData();
@@ -68,6 +70,8 @@ export default function App() {
   const { name, params } = page;
 
   return (
+    <>
+      <NotificationToast />
     <div className="max-w-sm mx-auto min-h-screen relative bg-white dark:bg-slate-900 animate-fadeSlideIn" key={name}>
       {name === 'home' && <Home navigate={navigate} />}
       {name === 'explore' && <Explore navigate={navigate} />}
@@ -81,6 +85,7 @@ export default function App() {
       {name === 'post' && <PostDetail postId={params.id} navigate={navigate} />}
       {name === 'new-story' && <NewStory navigate={navigate} goBack={goBack} />}
       {name === 'settings' && <Settings navigate={navigate} goBack={goBack} />}
-    </div>
+      </div>
+      </>
   );
 }
