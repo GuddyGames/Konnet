@@ -53,3 +53,10 @@ export const sendMessage = async (conversationId, message) => {
     lastTimestamp: message.timestamp,
   });
 };
+
+// Get just the unread count (for the badge dot in TopNav)
+export const getUnreadMessageCount = async (userId) => {
+  const q = query(notifsRef, where('toId', '==', userId), where('read', '==', false));
+  const snap = await getDocs(q);
+  return snap.size;
+};

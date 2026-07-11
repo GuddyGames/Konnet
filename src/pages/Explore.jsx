@@ -1,97 +1,116 @@
 import { useState, useEffect } from 'react';
-import { storage, KEYS } from '../utils/storage';
 import { useUser } from '../context/UserContext';
+import { searchUsers } from '../utils/firestoreSearch';
 import { getGradient } from '../utils/helpers';
 import Avatar from '../components/common/Avatar';
 import BottomNav from '../components/navigations/BottomNav';
+import { getAllPosts } from '../utils/firestorePosts';
 
 export default function Explore({ navigate }) {
   const { currentUser, getUserById } = useUser();
+  const [term, setTerm] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false); 
   const [posts, setPosts] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [search, setSearch] = useState('');
-  const [tab, setTab] = useState('grid'); // 'grid' | 'people'
+  const [postsLoading, setPostsloading] = useState(true);
 
   useEffect(() => {
-    const allPosts = storage.get(KEYS.POSTS) || [];
-    setPosts(allPosts.sort((a, b) => (b.likes?.length || 0) - (a.likes?.length || 0)));
-
-    const allUsers = storage.get(KEYS.USERS) || {};
-    setUsers(Object.values(allUsers).filter(u => u.id !== currentUser?.id));
+    const loadPosts = async () => {
+      setPostsloading(true);
+      try {
+        const all = await getAllPosts();
+        setPosts(all);
+      } catch (err) {
+        console.error('Failed to load explore postd:', err);
+      } finally {
+        setPostsloading(false);
+      }
+    };
+    loadPosts();
   }, []);
 
-  const filteredUsers = users.filter(u =>
-    u.username.includes(search.toLowerCase()) || u.name?.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const filteredPosts = posts.filter(p => {
-    const author = getUserById(p.authorId);
-    return p.caption?.toLowerCase().includes(search.toLowerCase()) ||
-           author?.username?.includes(search.toLowerCase());
-  });
-
+  const handlleSearch = async (value) => {
+    setTerm(value);
+    if (!value.trim()) {
+      setResults([]);
+      setSearched(false);
+      return;
+    }
+    setLoading(true);
+    setSearched(true);
+    try {
+      const found = await searchUsers(value);
+      setResults(found);
+    }
+    catch (err) {
+      console.error('Search failed:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="pb-20 min-h-screen bg-white dark:bg-slate-900">
-      {/* Search bar */}
-      <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 px-4 py-3 border-b border-gray-200 dark:border-slate-700">
-        <div className="flex items-center gap-2 bg-gray-100 dark:bg-slate-800 rounded-xl px-3 py-2">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-400" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search people, posts..."
-            className="flex-1 bg-transparent text-sm text-gray-800 dark:text-white outline-none placeholder-gray-400"
-          />
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-4 mt-3">
-          {['grid', 'people'].map(t => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`text-sm font-semibold pb-1 border-b-2 transition-colors capitalize ${
-                tab === t ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400'
-              }`}
-            >
-              {t === 'grid' ? 'Posts' : 'People'}
-            </button>
-          ))}
-        </div>
+      <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 py-3">
+        <input
+          value={term}
+          onChange={e => handleSearch(e.target.value)}
+          placeholder="Search users..."
+          className="w-full bg-gray-100 dark:bg-slate-800 rounded-full px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none"
+        />
       </div>
 
-      {tab === 'grid' ? (
-        <div className="grid grid-cols-3 gap-0.5">
-          {filteredPosts.map((post, i) => (
-            <div
-              key={post.id}
-              className="aspect-square cursor-pointer overflow-hidden relative"
-              style={{ background: post.image ? undefined : getGradient(post.gradientIndex || i) }}
-              onClick={() => navigate(`post/${post.id}`)}
-            >
-              {post.image && <img src={post.image} alt="post" className="w-full h-full object-cover" />}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="divide-y divide-gray-100 dark:divide-slate-800">
-          {filteredUsers.map(user => (
-            <div
-              key={user.id}
-              className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800"
-              onClick={() => navigate(`profile/${user.username}`)}
-            >
+      {/* Show search results when actively searching */}
+      {term.trim() ? (
+        loading ? (
+          <div className="flex justify-center py-16 text-gray-400">Searching...</div>
+        ) : searched && results.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-2">
+            <p className="text-gray-500 font-semibold">No users found</p>
+            <p className="text-gray-400 text-sm">Try a different username</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100 dark:divide-slate-800">
+            {results.map(user => (
+              <div
+                key={user.id}
+                className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                onClick={() => navigate(`profile/${user.username}`)}
+              >
+                
+
               <Avatar user={user} size={48} />
-              <div className="flex-1">
-                <p className="font-semibold text-sm text-gray-900 dark:text-white font-poppins">{user.username}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{user.name}</p>
-                <p className="text-xs text-gray-400">{user.followers?.length || 0} followers</p>
+                <div>
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white font-poppins">{user.username}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{user.name}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )
+      ) : (
+        /* Otherwise show the browsable post grid */
+        postsLoading ? (
+          <div className="flex justify-center py-16 text-gray-400">Loading posts...</div>
+        ) : posts.length === 0 ? (
+          <div className="flex justify-center py-16 text-gray-400">No posts yet</div>
+        ) : (
+          <div className="grid grid-cols-3 gap-0.5">
+            {posts.map(post => (
+              <div
+                key={post.id}
+                className="aspect-square cursor-pointer"
+                onClick={() => navigate(`post/${post.id}`)}
+              >
+                {post.image ? (
+                  <img src={post.image} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 dark:bg-slate-700" />
+                )}
+              </div>
+            ))}
+          </div>
+        )
       )}
 
       <BottomNav activePage="explore" navigate={navigate} />

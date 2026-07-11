@@ -2,7 +2,8 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
@@ -49,6 +50,29 @@ export const UserProvider = ({ children }) => {
     return unsub;
   }, []);
 
+  useEffect(() => {
+    getRedirectResult(auth).then(async (result) => {
+      if (!result) return;
+      const userRef = doc(db, 'users', result.user.uid);
+      const existing = await getDoc(userRef);
+      if (!existing.exists()) {
+        const baseUsername = (result.user.email || 'user').split('@')[0].toLowerCase();
+        const newUser = {
+          username: baseUsername,
+          name: result.user.displayName || baseUsername,
+          bio: '',
+          avatarColor: getAvatarColor(baseUsername),
+          avatarImage: result.user.photoURL || null,
+          followers: [],
+          following: [],
+          timestamp: Date.now(),
+        };
+        await setDoc(userRef, newUser);
+      }
+    }).catch(err => console.error('Google redirect error:', err));
+  }, [] );
+ 
+
   // Sign up — creates a Firebase Auth account + Firestore profile
   const signup = async (username, password, name) => {
     if (!username.trim() || !password.trim() || !name.trim()) {
@@ -94,30 +118,13 @@ export const UserProvider = ({ children }) => {
   const loginWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const userRef = doc(db, 'users', result.user.uid);
-      const existing = await getDoc(userRef);
-
-      if (!existing.exists()) {
-        // First-time Google sign-in: create a Firestore profile
-        const baseUsername = (result.user.email || 'user').split('@')[0].toLowerCase();
-        const newUser = {
-          username: baseUsername,
-          name: result.user.displayName || baseUsername,
-          bio: '',
-          avatarColor: getAvatarColor(baseUsername),
-          avatarImage: result.user.photoURL || null,
-          followers: [],
-          following: [],
-          timestamp: Date.now(),
-        };
-        await setDoc(userRef, newUser);
-      }
+      await signInWithRedirect(auth, provider);
       return { success: true };
     } catch (err) {
       return { error: err.message };
     }
   };
+     
 
   const logout = () => signOut(auth);
 

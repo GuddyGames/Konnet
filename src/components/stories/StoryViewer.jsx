@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '../../context/UserContext';
-import { storage, KEYS } from '../../utils/storage';
+import { markStoryViewed } from '../../utils/firestoreStories';
 import Avatar from '../common/Avatar';
 
 export default function StoryViewer({ story, onClose }) {
@@ -12,14 +12,12 @@ export default function StoryViewer({ story, onClose }) {
 
   // Mark as viewed
   useEffect(() => {
-    const all = storage.get(KEYS.STORIES) || [];
-    const updated = all.map(s => {
-      if (s.id === current.id && !s.viewers?.includes(currentUser?.id)) {
-        return { ...s, viewers: [...(s.viewers || []), currentUser.id] };
-      }
-      return s;
-    });
-    storage.set(KEYS.STORIES, updated);
+    if (!currentUser || !current) return;
+    if (!current.viewers?.includes(currentUser.id)) {
+      markStoryViewed(current.id, currentUser.id).catch(err =>
+        console.error('Failed to mark story viewed:', err)
+      );
+    }
   }, [index]);
 
   // Progress bar timer
@@ -71,7 +69,7 @@ export default function StoryViewer({ story, onClose }) {
       <div className="flex items-center gap-2 px-4 py-2">
         <Avatar user={author} size={36} />
         <span className="text-white font-semibold text-sm font-poppins">{author.username}</span>
-        <button onClick={e => { e.stopPropagation(); onClose(); }} className="ml-auto text-white text-2xl leading-none opacity-80">×</button>
+        <button onClick={e => { e.stopPropagation(); onClose(); }} className="ml-auto text-white text-2xl leading-none opacity-80">&times;</button>
       </div>
 
       {/* Story content */}
@@ -84,10 +82,3 @@ export default function StoryViewer({ story, onClose }) {
     </div>
   );
 }
-
-
-
-
-
-
-

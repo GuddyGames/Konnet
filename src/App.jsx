@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUser } from './context/UserContext';
-import { seedData } from './utils/seed';
+
 
 // Pages
 import Login from './pages/Login';
@@ -17,11 +17,9 @@ import PostDetail from './pages/PostDetail';
 import Reels from './pages/Reels';
 import Settings from './pages/Settings';
 import Loader from './components/common/Loader';
-import Notifications from './pages/Notifications';
 import NotificationToast from './components/common/NotificationToast';
 
-// Seed initial demo data (stories/notifications/conversations placeholders — not yet migrated to Firestore)
-seedData();
+
 
 export default function App() {
   const { currentUser, darkMode, authLoading } = useUser();
