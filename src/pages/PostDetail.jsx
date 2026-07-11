@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react';
-import { storage, KEYS } from '../utils/storage';
+import { getPostById } from '../utils/firestorePosts';
 import PostCard from '../components/feed/PostCard';
 
 export default function PostDetail({ postId, navigate }) {
   const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const all = storage.get(KEYS.POSTS) || [];
-    setPost(all.find(p => p.id === postId) || null);
-  }, [postId]);
+  const load = async () => {
+    setLoading(true);
+    const p = await getPostById(postId);
+    setPost(p);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, [postId]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
@@ -21,13 +26,13 @@ export default function PostDetail({ postId, navigate }) {
         <h2 className="font-bold font-poppins text-gray-900 dark:text-white">Post</h2>
       </div>
 
-      {post
-        ? <PostCard post={post} navigate={navigate} onUpdate={() => {
-            const all = storage.get(KEYS.POSTS) || [];
-            setPost(all.find(p => p.id === postId));
-          }} />
-        : <div className="flex items-center justify-center py-20"><p className="text-gray-500">Post not found</p></div>
-      }
+      {loading ? (
+        <div className="flex justify-center py-20 text-gray-400">Loading...</div>
+      ) : post ? (
+        <PostCard post={post} navigate={navigate} onUpdate={load} />
+      ) : (
+        <div className="flex items-center justify-center py-20"><p className="text-gray-500">Post not found</p></div>
+      )}
     </div>
   );
 }

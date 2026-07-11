@@ -23,7 +23,7 @@ export default function TopNav({ navigate }) {
 
         {/* Right icons */}
         <div className="flex items-center gap-3">
-      
+
 
           {/* Notifications */}
           <button onClick={() => navigate('notifications')} className="relative">

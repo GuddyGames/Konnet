@@ -1,5 +1,5 @@
 import {
-  collection, addDoc, getDocs, query, orderBy,
+  collection, addDoc, getDocs, getDoc, query, orderBy,
   doc, updateDoc, deleteDoc, arrayUnion, arrayRemove,
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -43,4 +43,10 @@ export const addCommentToPost = async (postId, comment) => {
   await updateDoc(postRef, {
     comments: arrayUnion(comment),
   });
+};
+
+// Get Post
+export const getPostById = async (postId) => {
+  const snap = await getDoc(doc(db, 'posts', postId));
+  return snap.exists() ? { id: postId, ...snap.data() } : null;
 };
