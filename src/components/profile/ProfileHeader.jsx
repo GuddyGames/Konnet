@@ -1,5 +1,5 @@
 import { useUser} from '../../context/UserContext';
-import { startConversation } from '../../utils/storage';
+import { findOrCreateConversation } from '../../utils/firestoreMessages';
 import Avatar from '../common/Avatar';
 import Settings from '../../pages/Settings';
 
@@ -80,8 +80,8 @@ export default function ProfileHeader({ user, posts, navigate, onUpdate }) {
           >
             {isFollowing ? 'Following' : 'Follow'}
             </button>
-          <button   onClick={() => {
-              const convoId = startConversation(currentUser.id, user.id);
+          <button   onClick={async () => {
+              const convoId = await findOrCreateConversation(currentUser.id, user.id);
               navigate(`chat/${convoId}`);
           }} className="flex-1 py-1.5 rounded-lg border border-gray-300 dark:border-slate-600 text-sm font-semibold text-gray-800 dark:text-white">
             Message
