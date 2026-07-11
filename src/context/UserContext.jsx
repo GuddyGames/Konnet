@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from '../utils/firebase';
 import { getAvatarColor } from '../utils/helpers';
+import { addNotification } from '../utils/firestoreNotifications';
 
 const UserContext = createContext(null);
 
@@ -141,6 +142,7 @@ export const UserProvider = ({ children }) => {
       await updateDoc(meRef, { following: arrayUnion(targetUserId) });
       await updateDoc(targetRef, { followers: arrayUnion(currentUser.id) });
       setCurrentUser(prev => ({ ...prev, following: [...(prev.following || []), targetUserId] }));
+      await addNotification(targetUserId, { type: 'follow', fromId: currentUser.id });
     }
   };
 

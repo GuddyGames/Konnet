@@ -1,29 +1,48 @@
 import { useState, useEffect } from 'react';
-import { storage, KEYS } from '../utils/storage';
 import { useUser } from '../context/UserContext';
+import { getUserNotifications, markAllNotificationsRead } from '../utils/firestoreNotifications';
 import { formatTime } from '../utils/helpers';
 import Avatar from '../components/common/Avatar';
 
 export default function Notifications({ navigate }) {
   const { currentUser, getUserById } = useUser();
   const [notifs, setNotifs] = useState([]);
+  const [fromUsers, setFromUsers] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const all = storage.get(KEYS.NOTIFICATIONS) || [];
-    const mine = all.filter(n => n.toId === currentUser?.id);
-    setNotifs(mine.sort((a, b) => b.timestamp - a.timestamp));
+    const load = async () => {
+      if (!currentUser) return;
+      setLoading(true);
+      try {
+        const all = await getUserNotifications(currentUser.id);
+        setNotifs(all);
 
-    // Mark all as read
-    const updated = all.map(n => ({ ...n, read: true }));
-    storage.set(KEYS.NOTIFICATIONS, updated);
-  }, []);
+        // Resolve each notification's sender up front (async, can't await during render)
+        const uniqueIds = [...new Set(all.map(n => n.fromId))];
+        const entries = await Promise.all(
+          uniqueIds.map(async id => [id, await getUserById(id)])
+        );
+        setFromUsers(Object.fromEntries(entries));
+
+        // Mark everything as read now that they've opened the page
+        await markAllNotificationsRead(currentUser.id);
+      } catch (err) {
+        console.error('Failed to load notifications:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [currentUser]);
 
   const getIcon = (type) => {
     switch (type) {
-      case 'like': return '️';
-      case 'comment': return '';
-      case 'follow': return '';
-      default: return '';
+      case 'like': return '\u2764\uFE0F';
+      case 'comment': return '\uD83D\uDCAC';
+      case 'follow': return '\uD83D\uDC64';
+      case 'message': return '\u2709\uFE0F';
+      default: return '\uD83D\uDD14';
     }
   };
 
@@ -32,6 +51,7 @@ export default function Notifications({ navigate }) {
       case 'like': return 'liked your post';
       case 'comment': return `commented: "${notif.text}"`;
       case 'follow': return 'started following you';
+      case 'message': return 'sent you a message';
       default: return 'interacted with you';
     }
   };
@@ -47,15 +67,16 @@ export default function Notifications({ navigate }) {
         <h2 className="font-bold font-poppins text-gray-900 dark:text-white">Notifications</h2>
       </div>
 
-      {notifs.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-20 text-gray-400">Loading...</div>
+      ) : notifs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <div className="text-5xl"></div>
           <p className="text-gray-500 font-semibold">No notifications yet</p>
         </div>
       ) : (
         <div className="divide-y divide-gray-100 dark:divide-slate-800">
           {notifs.map(notif => {
-            const from = getUserById(notif.fromId);
+            const from = fromUsers[notif.fromId];
             if (!from) return null;
             return (
               <div
@@ -74,7 +95,7 @@ export default function Notifications({ navigate }) {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-gray-900 dark:text-white">
-                    <span className="font-semibold">{from.username}</span>{' '}{getText(notif)}
+                    <span className="font-semibold">{from.username}</span> {getText(notif)}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">{formatTime(notif.timestamp)}</p>
                 </div>

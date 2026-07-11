@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useUser } from '../../context/UserContext';
 import { formatTime, getGradient, genId } from '../../utils/helpers';
 import { toggleLikePost, addCommentToPost } from '../../utils/firestorePosts';
+import { addNotification } from '../../utils/firestoreNotifications';
 import Avatar from '../common/Avatar';
 
 export default function PostCard({ post, navigate, onUpdate }) {
@@ -46,6 +47,9 @@ export default function PostCard({ post, navigate, onUpdate }) {
     setLikeCount(c => wasLiked ? c - 1 : c + 1);
     try {
       await toggleLikePost(post.id, currentUser.id, wasLiked);
+      if (!wasLiked && author) {
+        await addNotification(author.id, { type: 'like', fromId: currentUser.id, postId: post.id });
+      }
       onUpdate?.();
     } catch (err) {
       console.error('Failed to toggle like:', err);
@@ -74,6 +78,9 @@ export default function PostCard({ post, navigate, onUpdate }) {
     };
     try {
       await addCommentToPost(post.id, newComment);
+      if (author) {
+        await addNotification(author.id, { type: 'comment', fromId: currentUser.id, postId: post.id, text: newComment.text });
+      }
       setComments(c => [...c, newComment]);
       setCommentText('');
       onUpdate?.();

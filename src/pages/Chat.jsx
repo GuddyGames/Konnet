@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { storage, KEYS, addNotification} from '../utils/storage';
 import { useUser } from '../context/UserContext';
+import { listenToConversation, sendMessage } from '../utils/firestoreMessages';
+import { addNotification } from '../utils/firestoreNotifications';
 import { genId, formatTime } from '../utils/helpers';
 import Avatar from '../components/common/Avatar';
 
@@ -11,30 +12,31 @@ export default function Chat({ conversationId, navigate }) {
   const [input, setInput] = useState('');
   const bottomRef = useRef();
 
+  // Listen live to this conversation — new messages appear instantly,
+  // even ones sent from the other person's device, with no refresh needed.
   useEffect(() => {
-    const all = storage.get(KEYS.CONVERSATIONS) || [];
-    const found = all.find(c => c.id === conversationId);
-    if (found) {
-      setConvo(found);
-      const otherId = found.participants.find(id => id !== currentUser?.id);
-      setOther(getUserById(otherId));
-    }
-    setTimeout(() => bottomRef.current?.scrollIntoView(), 100);
-  }, [conversationId]);
+    if (!conversationId || !currentUser) return;
+    const unsub = listenToConversation(conversationId, async (data) => {
+      setConvo(data);
+      const otherId = data.participants.find(id => id !== currentUser.id);
+      const otherUser = await getUserById(otherId);
+      setOther(otherUser);
+      setTimeout(() => bottomRef.current?.scrollIntoView(), 100);
+    });
+    return unsub;
+  }, [conversationId, currentUser]);
 
-  const send = () => {
+  const send = async () => {
     if (!input.trim() || !convo) return;
     const msg = { id: genId(), fromId: currentUser.id, text: input.trim(), timestamp: Date.now() };
-    const all = storage.get(KEYS.CONVERSATIONS, ) || [];
-    const updated = all.map(c => {
-      if (c.id !== convo.id) return c;
-      return {...c, messages: [...(c.messages || []), msg], lastMessage: msg.text, lastTimestamp: msg.timestamp };
-    });
-    storage.set(KEYS.CONVERSATIONS, updated);
-    addNotification(other.id, { type: 'message', fromId: currentUser.id });
-    setConvo(prev => ({...prev, messages: [...(prev.messages || []), msg] }));
     setInput('');
-    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+    try {
+      await sendMessage(conversationId, msg);
+      if (other) await addNotification(other.id, { type: 'message', fromId: currentUser.id });
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
   };
 
   return (
@@ -59,7 +61,7 @@ export default function Chat({ conversationId, navigate }) {
                 isMe ? 'text-white rounded-br-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-white rounded-bl-sm'
               }`} style={isMe ? { background: 'linear-gradient(135deg, #2563EB, #7C3AED)' } : {}}>
                 {msg.text}
-                <p className={`text-xs mt-1 ${isMe ? 'text-blue-200' : `text-gray-400`}`}>{formatTime(msg.timestamp)}</p>
+                <p className={`text-xs mt-1 ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>{formatTime(msg.timestamp)}</p>
               </div>
             </div>
           );
@@ -68,7 +70,7 @@ export default function Chat({ conversationId, navigate }) {
       </div>
 
       {/* Input */}
-      <div className='fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm px-4 py-3 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700'>
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm px-4 py-3 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700">
         <div className="flex items-center gap-2">
           <input
             value={input}
