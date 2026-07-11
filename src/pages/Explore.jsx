@@ -30,7 +30,7 @@ export default function Explore({ navigate }) {
     loadPosts();
   }, []);
 
-  const handlleSearch = async (value) => {
+  const handleSearch = async (value) => {
     setTerm(value);
     if (!value.trim()) {
       setResults([]);
