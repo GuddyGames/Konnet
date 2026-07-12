@@ -76,3 +76,33 @@ export const getUnreadConversationCount = async (userId) => {
     return (c.lastTimestamp || 0) > lastRead;
   }).length;
 };
+
+const isSameDay = (a, b) => {
+  const d1 = new Date(a), d2 = new Date(b);
+  return d1.toDateString() === d2.toDateString();
+};
+
+const isYesterday = (timestamp, now) => {
+  const oneDayMs = 24 * 60 * 60 * 1000;
+  return isSameDay(timestamp, now - oneDayMs);
+};
+// calls  this whenever a message is sent - updates or resets the streak
+export const updateStreak = async (conversationId, convo) => {
+  const now = Date.now();
+  const lastActivity = convo.streakLastActive || 0;
+
+  let newStreak;
+  if (isSameDay(lastActivity, now)) {
+    newStreak = convo.streak || 0; // already counted today, no change
+  } else if (isYesterday(lastActivity, now)) {
+    newStreak = (convo.streak || 0) + 1;// consecutive day, streak grows
+  } else {
+    newStreak = 1; // missed a day (or first message ever), streak restarts
+  }
+   
+  await updateDoc(doc(db, 'conversations', conversationId), {
+    streak: newStreak,
+    streakLastActive: now,
+  });
+  return newStreak;
+};

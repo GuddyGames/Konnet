@@ -12,35 +12,13 @@ export default function GuddyAiChat({ onClose }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const send = async () => {
-    if (!input.trim() || loading) return;
-    const txt = input.trim();
-    setInput('');
-    setMessages(p => [...p, { role: 'user', text: txt }]);
-    setLoading(true);
-
-    try {
-      const history = messages.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.text }));
-      const res = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': import.meta.env.VITE_GEMINI_KEY || '' },
-          body: JSON.stringify({
-            system_instruction: { parts: [{ text: 'You are GuddyAi, a witty, friendly AI assistant embedded inside Konnet — a vibrant social media app. Help users write posts, captions, reply to comments, explore trends, or just chat. Be concise and fun.' }] },
-            contents: [...history.map(h => ({ role: h.role, parts: [{ text: h.content }] })), { role: 'user', parts: [{ text: txt }] }],
-          }),
-        }
-      );
-      const data = await res.json();
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't respond right now.";
-      setMessages(p => [...p, { role: 'assistant', text: reply }]);
-    } catch {
-      setMessages(p => [...p, { role: 'assistant', text: 'Connection issue — try again.' }]);
-    }
-    setLoading(false);
-  };
-
+  const res = await fetch('/apo/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages: txt, history })
+  });
+  const data = await res.json();
+  setMessages(p => [...p, { role: 'assistant', text: data.reply }]);
   return (
     <div className="animate-slideUp fixed bottom-20 right-4 w-72 h-96 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl flex flex-col z-50 border border-gray-200 dark:border-slate-700 overflow-hidden">
       {/* Header */}

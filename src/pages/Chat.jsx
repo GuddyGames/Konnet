@@ -5,6 +5,7 @@ import { addNotification } from '../utils/firestoreNotifications';
 import { genId, formatTime } from '../utils/helpers';
 import Avatar from '../components/common/Avatar';
 import PresenceDot from '../components/common/PresenceDot';
+import { updateStreak } from '../utils/firestoreMessages';
 
 export default function Chat({ conversationId, navigate }) {
   const { currentUser, getUserById } = useUser();
@@ -46,6 +47,10 @@ export default function Chat({ conversationId, navigate }) {
     } catch (err) {
       console.error('Failed to send message:', err);
     }
+    if (convo) {
+      const newStreak = await updateStreak(conversationId, convo);
+      setConvo(prev => ({ ...prev, streak: newStreak, streakLastActive: Date.now() }));
+    }
   };
 
   return (
@@ -64,6 +69,9 @@ export default function Chat({ conversationId, navigate }) {
                     <PresenceDot userId={other.id} />
         </div>
             <span className="font-bold font-poppins text-gray-900 dark:text-white">{other.username}</span>
+            {convo?.streak > 1 && (
+              <span className='ml-1 flex items-center gap-0.5 text-sm font-bold text-orange-500 animate-pulse-soft'>🔥{convo.streak}</span>
+            )}
           </>
         )}
       </div>

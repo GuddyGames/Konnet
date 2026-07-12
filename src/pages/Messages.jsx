@@ -64,7 +64,9 @@ export default function Messages({ navigate }) {
                                   <PresenceDot userId={convo.other.id} />
                       </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-gray-900 dark:text-white font-poppins">{convo.other.username}</p>
+                <p className="font-semibold text-sm text-gray-900 dark:text-white font-poppins">{convo.other.username}
+                  {convo.streak > 1 && <span className='ml-1 text-orange-500 text-xs'>🔥{convo.streak}</span>}
+                </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{convo.lastMessage}</p>
               </div>
               <span className="text-xs text-gray-400 flex-shrink-0">{formatTime(convo.lastTimestamp)}</span>
