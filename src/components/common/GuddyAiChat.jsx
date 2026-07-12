@@ -12,13 +12,29 @@ export default function GuddyAiChat({ onClose }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const res = await fetch('/apo/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages: txt, history })
-  });
-  const data = await res.json();
-  setMessages(p => [...p, { role: 'assistant', text: data.reply }]);
+  const send = async () => {
+    if (!input.trim() || loading) return;
+    const txt = input.trim();
+    setInput('');
+    setMessages(p => [...p, { role: 'user', text: txt }]);
+    setLoading(true);
+
+    try {
+      const history = messages.map(m => ({ role: m.role, content: m.text }));
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: txt, history })
+      });
+      const data = await res.json();
+      setMessages(p => [...p, { role: 'assistant', text: data.reply }]);
+    } catch (err) {
+      setMessages(p => [...p, { role: 'assistant', text: 'Connection issue - try again. ' }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="animate-slideUp fixed bottom-20 right-4 w-72 h-96 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl flex flex-col z-50 border border-gray-200 dark:border-slate-700 overflow-hidden">
       {/* Header */}
