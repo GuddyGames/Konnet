@@ -56,6 +56,16 @@ export default function Notifications({ navigate }) {
     }
   };
 
+  const handleClick = (notif, from) => {
+    if (notif.type === 'follow') {
+      navigate(`profile/${from.username}`);
+    } else if (notif.type === 'message' && notif.conversationId) {
+      navigate(`chat/${notif.conversationId}`);
+    } else if (notif.postId) {
+      navigate(`post/${notif.postId}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center gap-3">
@@ -84,10 +94,7 @@ export default function Notifications({ navigate }) {
                 className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
                   !notif.read ? 'bg-blue-50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-slate-800'
                 }`}
-                onClick={() => {
-                  if (notif.type === 'follow') navigate(`profile/${from.username}`);
-                  else if (notif.postId) navigate(`post/${notif.postId}`);
-                }}
+                onClick={() => handleClick(notif, from)}
               >
                 <div className="relative">
                   <Avatar user={from} size={44} />

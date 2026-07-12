@@ -1,6 +1,6 @@
 import {
   collection, addDoc, getDocs, getDoc, query, where,
-  doc, updateDoc, arrayUnion, onSnapshot, orderBy,
+  doc, updateDoc, arrayUnion, onSnapshot,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -38,7 +38,9 @@ export const findOrCreateConversation = async (myId, otherId) => {
     participants: [myId, otherId],
     messages: [],
     lastMessage: '',
+    lastMessageFromId: null,
     lastTimestamp: Date.now(),
+    lastReadBy: {},
   };
   const docRef = await addDoc(convosRef, newConvo);
   return docRef.id;
@@ -50,13 +52,27 @@ export const sendMessage = async (conversationId, message) => {
   await updateDoc(convoRef, {
     messages: arrayUnion(message),
     lastMessage: message.text,
+    lastMessageFromId: message.fromId,
     lastTimestamp: message.timestamp,
   });
 };
 
-// Get just the unread count (for the badge dot in TopNav)
-export const getUnreadMessageCount = async (userId) => {
-  const q = query(notifsRef, where('toId', '==', userId), where('read', '==', false));
-  const snap = await getDocs(q);
-  return snap.size;
+// Mark a conversation as read by a user (call this whenever they open/view it)
+export const markConversationRead = async (conversationId, userId) => {
+  const convoRef = doc(db, 'conversations', conversationId);
+  await updateDoc(convoRef, {
+    [`lastReadBy.${userId}`]: Date.now(),
+  });
+};
+
+// Count how many conversations have unread messages for a user
+// (a conversation is "unread" if the last message wasn't sent by this user,
+// and it arrived after the user's last recorded read time)
+export const getUnreadConversationCount = async (userId) => {
+  const convos = await getUserConversations(userId);
+  return convos.filter(c => {
+    if (c.lastMessageFromId === userId) return false; // their own message, not unread
+    const lastRead = c.lastReadBy?.[userId] || 0;
+    return (c.lastTimestamp || 0) > lastRead;
+  }).length;
 };

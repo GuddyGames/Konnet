@@ -2,6 +2,7 @@ import { useUser} from '../../context/UserContext';
 import { findOrCreateConversation } from '../../utils/firestoreMessages';
 import Avatar from '../common/Avatar';
 import Settings from '../../pages/Settings';
+import PresenceDot from '../common/PresenceDot';
 
 
 export default function ProfileHeader({ user, posts, navigate, onUpdate }) {
@@ -24,7 +25,10 @@ export default function ProfileHeader({ user, posts, navigate, onUpdate }) {
       <div className="flex items-center gap-6 mb-4">
         {/* Avatar */}
         <div className={`rounded-full ${posts.length > 0 ? 'story-ring p-0.5' : ''}`}>
-          <Avatar user={user} size={80} />
+          <div className="relative">
+            <Avatar user={user} size={80} />
+            <PresenceDot userId={user.id} />
+          </div>
         </div>
 
         {/* Stats */}

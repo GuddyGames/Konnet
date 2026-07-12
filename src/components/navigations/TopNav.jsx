@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getUnreadNotifCount } from '../../utils/firestoreNotifications';
+import { getUnreadConversationCount } from '../../utils/firestoreMessages';
 import { useUser } from '../../context/UserContext';
 import GuddyAiChat from '../common/GuddyAiChat';
 
@@ -7,12 +8,14 @@ export default function TopNav({ navigate }) {
   const { darkMode, toggleDarkMode, currentUser } = useUser();
   const [aiOpen, setAiOpen] = useState(false);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
-  // getUnreadNotifCount is async (Firestore), so it needs to be fetched in an
+  // Both counts are async (Firestore), so they need to be fetched in an
   // effect rather than computed directly during render.
   useEffect(() => {
     if (!currentUser) return;
     getUnreadNotifCount(currentUser.id).then(setUnreadNotifs);
+    getUnreadConversationCount(currentUser.id).then(setUnreadMessages);
   }, [currentUser]);
 
   return (
@@ -23,8 +26,7 @@ export default function TopNav({ navigate }) {
 
         {/* Right icons */}
         <div className="flex items-center gap-3">
-
-
+      
           {/* Notifications */}
           <button onClick={() => navigate('notifications')} className="relative">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-gray-800 dark:text-gray-200">
@@ -40,6 +42,9 @@ export default function TopNav({ navigate }) {
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-gray-800 dark:text-gray-200">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
+            {unreadMessages > 0 && (
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />
+            )}
           </button>
 
           {/* GuddyAi badge */}

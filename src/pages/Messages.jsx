@@ -3,6 +3,7 @@ import { useUser } from '../context/UserContext';
 import { getUserConversations } from '../utils/firestoreMessages';
 import { formatTime } from '../utils/helpers';
 import Avatar from '../components/common/Avatar';
+import PresenceDot from '../components/common/PresenceDot';
 
 export default function Messages({ navigate }) {
   const { currentUser, getUserById } = useUser();
@@ -58,7 +59,10 @@ export default function Messages({ navigate }) {
               className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
               onClick={() => navigate(`chat/${convo.id}`)}
             >
-              <Avatar user={convo.other} size={52} />
+               <div className="relative">
+                                  <Avatar user={convo.other} size={52} />
+                                  <PresenceDot userId={convo.other.id} />
+                      </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm text-gray-900 dark:text-white font-poppins">{convo.other.username}</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{convo.lastMessage}</p>

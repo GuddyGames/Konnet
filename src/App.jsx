@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { startPresenceHeartbeat } from './utils/firestorePresence';
 import { useUser } from './context/UserContext';
 
 
@@ -18,13 +19,15 @@ import Reels from './pages/Reels';
 import Settings from './pages/Settings';
 import Loader from './components/common/Loader';
 import NotificationToast from './components/common/NotificationToast';
-
+import './styles/animations.css';
 
 
 export default function App() {
   const { currentUser, darkMode, authLoading } = useUser();
   const [page, setPage] = useState({ name: 'home', params: {} });
   const [history, setHistory] = useState([]);
+
+
 
   // Apply dark mode class
   useEffect(() => {
@@ -53,6 +56,11 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
+  useEffect(() => {
+    if (!currentUser) return;
+    return startPresenceHeartbeat(currentUser.id);
+  }, [currentUser]);
+  
   // IMPORTANT: all hooks above this line, all conditional returns below.
   // Firebase needs a moment on first load to check if a session already exists.
   if (authLoading) {
@@ -66,6 +74,7 @@ export default function App() {
   if (!currentUser) return <Login />;
 
   const { name, params } = page;
+
 
   return (
     <>

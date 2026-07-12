@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useUser } from '../context/UserContext';
-import { listenToConversation, sendMessage } from '../utils/firestoreMessages';
+import { listenToConversation, sendMessage, markConversationRead } from '../utils/firestoreMessages';
 import { addNotification } from '../utils/firestoreNotifications';
 import { genId, formatTime } from '../utils/helpers';
 import Avatar from '../components/common/Avatar';
+import PresenceDot from '../components/common/PresenceDot';
 
 export default function Chat({ conversationId, navigate }) {
   const { currentUser, getUserById } = useUser();
@@ -22,6 +23,12 @@ export default function Chat({ conversationId, navigate }) {
       const otherUser = await getUserById(otherId);
       setOther(otherUser);
       setTimeout(() => bottomRef.current?.scrollIntoView(), 100);
+
+      // Mark read every time new data comes in while this chat is open,
+      // so the unread badge clears immediately and stays cleared while viewing.
+      markConversationRead(conversationId, currentUser.id).catch(err =>
+        console.error('Failed to mark conversation read:', err)
+      );
     });
     return unsub;
   }, [conversationId, currentUser]);
@@ -32,7 +39,9 @@ export default function Chat({ conversationId, navigate }) {
     setInput('');
     try {
       await sendMessage(conversationId, msg);
-      if (other) await addNotification(other.id, { type: 'message', fromId: currentUser.id });
+      if (other) {
+        await addNotification(other.id, { type: 'message', fromId: currentUser.id, conversationId });
+      }
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
     } catch (err) {
       console.error('Failed to send message:', err);
@@ -48,7 +57,15 @@ export default function Chat({ conversationId, navigate }) {
             <polyline points="15 18 9 12 15 6"/>
           </svg>
         </button>
-        {other && <><Avatar user={other} size={36} /><span className="font-bold font-poppins text-gray-900 dark:text-white">{other.username}</span></>}
+        {other && (
+            <>
+          <div className="relative">
+                    <Avatar user={other} size={36} />
+                    <PresenceDot userId={other.id} />
+        </div>
+            <span className="font-bold font-poppins text-gray-900 dark:text-white">{other.username}</span>
+          </>
+        )}
       </div>
 
       {/* Messages */}
