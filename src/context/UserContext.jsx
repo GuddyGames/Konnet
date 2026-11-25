@@ -69,7 +69,7 @@ export const UserProvider = ({ children }) => {
       try {
         const user = await loadKonnetUser(session.user.id);
         if (active) {
-          const needsUsername = !user || user.username?.startsWith('user_');
+          const needsUsername = !user || user.username?.startsWith('pending_');
           setProfileSetupRequired(needsUsername);
           setCurrentUser(needsUsername ? null : user);
         }
@@ -102,8 +102,8 @@ export const UserProvider = ({ children }) => {
     }
 
     const normalizedUsername = username.trim().toLowerCase();
-    if (!/^[a-z0-9_]{3,20}$/.test(normalizedUsername)) {
-      return { error: 'Username must be 3–20 characters and contain only letters, numbers or underscores.' };
+    if (!/^[a-z0-9_]{3,20}$/.test(normalizedUsername) || normalizedUsername.startsWith('pending_')) {
+      return { error: 'Choose 3–20 characters using letters, numbers or underscores. The pending_ prefix is reserved.' };
     }
 
     try {
