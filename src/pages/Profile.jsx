@@ -44,7 +44,7 @@ export default function Profile({ username, navigate }) {
   }
 
   return (
-    <div className="pb-20 min-h-screen bg-white dark:bg-slate-900">
+    <div className="app-page-with-nav min-h-[100dvh] bg-white dark:bg-slate-900">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate('home')}>
