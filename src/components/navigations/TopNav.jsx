@@ -27,7 +27,7 @@ export default function TopNav({ navigate }) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-100/80 bg-white/90 px-4 pb-3 pt-[calc(.75rem+env(safe-area-inset-top))] backdrop-blur-2xl dark:border-slate-800/80 dark:bg-slate-950/90">
+      <header className="konnet-top-nav sticky top-0 z-40 flex items-center justify-between border-b pb-3 backdrop-blur-2xl">
         <div className="flex min-w-0 items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-gradient-to-br from-blue-600 to-violet-600 text-lg font-black text-white shadow-md shadow-blue-600/20">K</div>
           <div className="min-w-0">
