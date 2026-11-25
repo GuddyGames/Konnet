@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -15,6 +15,9 @@
   --konnet-line: #E9EDF4;
   --konnet-soft-blue: #EEF3FF;
   --konnet-radius-card: 22px;
+  --konnet-radius-control: 14px;
+  --konnet-nav-height: 64px;
+  --konnet-shadow-soft: 0 8px 28px rgba(24, 39, 75, .045);
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -52,28 +55,12 @@ body {
 }
 
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
-
-  button, input, textarea, select {
-    font: inherit;
-  }
-
-  input, textarea, select {
-    font-size: 16px;
-    scroll-margin-bottom: 8rem;
-  }
-
+  * { box-sizing: border-box; }
+  button, input, textarea, select { font: inherit; }
+  input, textarea, select { font-size: 16px; scroll-margin-bottom: 8rem; }
   textarea { -webkit-overflow-scrolling: touch; }
-
-  button {
-    touch-action: manipulation;
-  }
-
-  ::-webkit-scrollbar {
-    display: none;
-  }
+  button { touch-action: manipulation; }
+  ::-webkit-scrollbar { display: none; }
 }
 
 .app-shell {
@@ -93,39 +80,29 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-.dark {
-  color-scheme: dark;
-}
-
-.dark .app-shell {
-  background: #0B1020;
-}
-
-.dark body,
-.dark html {
-  background: #0B1020;
-}
+.dark { color-scheme: dark; }
+.dark .app-shell { background: #0B1020; }
+.dark body, .dark html { background: #0B1020; }
 
 .konnet-icon-button {
   display: inline-flex;
   width: 44px;
   height: 44px;
+  flex: 0 0 44px;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--konnet-line);
-  border-radius: 15px;
+  border-radius: var(--konnet-radius-control);
   background: var(--konnet-surface);
   color: var(--konnet-ink);
   transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
 }
-
+.konnet-icon-button:active { transform: scale(.94); }
 .dark .konnet-icon-button {
   background: #151D31;
   border-color: #263149;
   color: #E7ECF7;
 }
-
-.konnet-icon-button:active { transform: scale(.94); }
 
 .konnet-section-title {
   color: var(--konnet-ink);
@@ -134,9 +111,7 @@ body {
   font-weight: 700;
   letter-spacing: -.02em;
 }
-
 .dark .konnet-section-title { color: #F8FAFC; }
-
 .konnet-muted { color: var(--konnet-muted); }
 .dark .konnet-muted { color: #98A4B8; }
 
@@ -144,7 +119,7 @@ body {
   border: 1px solid var(--konnet-line);
   border-radius: var(--konnet-radius-card);
   background: var(--konnet-surface);
-  box-shadow: 0 8px 28px rgba(24, 39, 75, .045);
+  box-shadow: var(--konnet-shadow-soft);
 }
 .dark .konnet-card {
   border-color: #263149;
@@ -152,126 +127,122 @@ body {
   box-shadow: none;
 }
 
-.app-page-with-nav {
-  padding-bottom: calc(5rem + var(--safe-bottom));
+.konnet-top-nav {
+  min-height: 68px;
+  padding-top: calc(.65rem + var(--safe-top));
+  padding-right: max(1rem, var(--safe-right));
+  padding-left: max(1rem, var(--safe-left));
+  border-color: var(--konnet-line);
+  background: rgba(255, 255, 255, .94);
+}
+.dark .konnet-top-nav {
+  border-color: #263149;
+  background: rgba(11, 16, 32, .94);
 }
 
-.app-bottom-nav {
-  padding-bottom: calc(0.5rem + var(--safe-bottom));
-  padding-left: max(0.75rem, var(--safe-left));
-  padding-right: max(0.75rem, var(--safe-right));
-  min-height: calc(4rem + var(--safe-bottom));
-}
+.app-page-with-nav { padding-bottom: calc(var(--konnet-nav-height) + var(--safe-bottom) + .5rem); }
 
-/* Konnet is a phone-first installed app, not a centered desktop web layout. */
 .app-bottom-nav {
   left: 0;
   width: 100%;
   max-width: none;
+  min-height: calc(var(--konnet-nav-height) + var(--safe-bottom));
+  padding: .45rem max(.75rem, var(--safe-right)) calc(.4rem + var(--safe-bottom)) max(.75rem, var(--safe-left));
   transform: none;
+  border-color: var(--konnet-line);
+  background: rgba(255, 255, 255, .96);
 }
+.dark .app-bottom-nav {
+  border-color: #263149;
+  background: rgba(11, 16, 32, .97);
+}
+.konnet-nav-item {
+  min-width: 0;
+  min-height: 48px;
+  color: #8992A5;
+  -webkit-tap-highlight-color: transparent;
+}
+.konnet-nav-item[aria-current="page"] { color: var(--konnet-blue); }
+.dark .konnet-nav-item { color: #8490A6; }
+.dark .konnet-nav-item[aria-current="page"] { color: #8EABFF; }
+.konnet-nav-icon {
+  display: flex;
+  width: 38px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+.konnet-nav-item[aria-current="page"] .konnet-nav-icon { background: var(--konnet-soft-blue); }
+.dark .konnet-nav-item[aria-current="page"] .konnet-nav-icon { background: rgba(59, 110, 245, .17); }
+.konnet-nav-icon svg { width: 21px; height: 21px; }
+.konnet-nav-create {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  margin-top: -17px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, var(--konnet-blue), var(--konnet-purple));
+  color: white;
+  box-shadow: 0 7px 18px rgba(37, 99, 235, .24);
+}
+.konnet-nav-create svg { width: 23px; height: 23px; }
 
 @media (orientation: landscape) and (max-height: 500px) {
-  .app-shell {
-    max-width: none;
-  }
-
-  .app-bottom-nav {
-    min-height: 3.5rem;
-    padding-top: 0.25rem;
-    padding-bottom: calc(0.25rem + var(--safe-bottom));
-  }
-
-  .app-bottom-nav button {
-    min-height: 2.75rem;
-  }
+  :root { --konnet-nav-height: 54px; }
+  .app-bottom-nav { padding-top: .2rem; padding-bottom: calc(.2rem + var(--safe-bottom)); }
+  .app-bottom-nav button { min-height: 42px; }
+  .konnet-nav-create { width: 38px; height: 38px; margin-top: -10px; }
 }
 
 @layer utilities {
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  .font-poppins {
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .font-inter {
-    font-family: 'Inter', sans-serif;
-  }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .font-poppins { font-family: 'Poppins', sans-serif; }
+  .font-inter { font-family: 'Inter', sans-serif; }
 }
 
-
 button {
-  transition: transform 0.12s ease, opacity 0.12s ease;
+  transition: transform .12s ease, opacity .12s ease;
   -webkit-user-select: none;
   user-select: none;
 }
-
 .konnet-screen {
   width: 100%;
   min-height: 100dvh;
   transform-origin: center;
   will-change: transform, opacity;
 }
-
-.konnet-screen-forward {
-  animation: konnet-push-in 220ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
-}
-
-.konnet-screen-back {
-  animation: konnet-pop-in 200ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
-}
-
+.konnet-screen-forward { animation: konnet-push-in 220ms cubic-bezier(.2, .75, .25, 1) both; }
+.konnet-screen-back { animation: konnet-pop-in 200ms cubic-bezier(.2, .75, .25, 1) both; }
 @keyframes konnet-push-in {
-  from { opacity: 0.72; transform: translate3d(4%, 0, 0); }
+  from { opacity: .72; transform: translate3d(4%, 0, 0); }
   to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
-
 @keyframes konnet-pop-in {
-  from { opacity: 0.72; transform: translate3d(-3%, 0, 0); }
+  from { opacity: .72; transform: translate3d(-3%, 0, 0); }
   to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
-
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .konnet-screen-forward,
-  .konnet-screen-back { animation: none; }
+  .konnet-screen-forward, .konnet-screen-back { animation: none; }
   button { transition: none; }
 }
-
-button:active {
-  transform: scale(0.97);
-}
-
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
+button:active { transform: scale(.97); }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--konnet-blue);
   outline-offset: 2px;
 }
-
 .gradient-text {
   background: linear-gradient(90deg, var(--konnet-blue), var(--konnet-purple));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
-.gradient-bg {
-  background: linear-gradient(135deg, var(--konnet-blue), var(--konnet-purple));
-}
-
-.gold-gradient {
-  background: linear-gradient(135deg, #F59E0B, #D97706);
-}
-
+.gradient-bg { background: linear-gradient(135deg, var(--konnet-blue), var(--konnet-purple)); }
+.gold-gradient { background: linear-gradient(135deg, #F59E0B, #D97706); }
 .story-ring {
   background: linear-gradient(135deg, var(--konnet-blue), var(--konnet-purple));
   padding: 2px;
