@@ -34,8 +34,8 @@ export default function Messages({ navigate }) {
   }, [currentUser]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900">
-      <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center gap-3">
+    <div className="min-h-[100dvh] bg-white dark:bg-slate-900 pb-[env(safe-area-inset-bottom)]">
+      <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-3 flex items-center gap-3">
         <button onClick={() => navigate('home')}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="2">
             <polyline points="15 18 9 12 15 6"/>
