@@ -14,9 +14,6 @@
     "android": {
       "package": "app.konnet.social",
       "edgeToEdgeEnabled": true
-    },
-    "plugins": [
-      "expo-secure-store"
-    ]
+    }
   }
 }
