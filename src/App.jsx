@@ -25,6 +25,7 @@ export default function App() {
   const { currentUser, darkMode, authLoading, profileSetupRequired } = useUser();
   const [page, setPage] = useState({ name: 'home', params: {} });
   const [history, setHistory] = useState([]);
+  const [transitionDirection, setTransitionDirection] = useState('forward');
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
@@ -40,6 +41,7 @@ export default function App() {
     const handlePopState = (event) => {
       const previousPage = event.state?.konnetPage;
       if (previousPage) {
+        setTransitionDirection('back');
         setPage(previousPage);
         setHistory((items) => items.slice(0, -1));
       } else {
@@ -55,6 +57,7 @@ export default function App() {
   const navigate = (path) => {
     const [name, ...rest] = path.split('/');
     const nextPage = { name, params: { id: rest.join('/') } };
+    setTransitionDirection('forward');
     setHistory((items) => [...items, page]);
     window.history.pushState({ konnetPage: nextPage }, '', window.location.href);
     setPage(nextPage);
@@ -66,6 +69,7 @@ export default function App() {
       window.history.back();
       return;
     }
+    setTransitionDirection('back');
     setPage({ name: 'home', params: {} });
   };
 
@@ -91,7 +95,7 @@ export default function App() {
     <>
       <NotificationToast />
       <PWAInstallPrompt />
-      <main className="app-shell animate-fadeSlideIn" key={name}>
+      <main className={"app-shell konnet-screen konnet-screen-" + transitionDirection} key={name + "-" + (params.id || "")}>
         {name === 'home' && <Home navigate={navigate} />}
         {name === 'explore' && <Explore navigate={navigate} />}
         {name === 'new-post' && <NewPost navigate={navigate} goBack={goBack} />}
