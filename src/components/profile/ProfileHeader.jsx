@@ -20,9 +20,9 @@ export default function ProfileHeader({ user, posts, navigate, onUpdate }) {
  
 
   return (
-    <div className="bg-white dark:bg-slate-900 px-4 pt-4 pb-2">
+    <div className="bg-white px-4 pb-5 pt-5 dark:bg-slate-950">
       {/* Top row */}
-      <div className="flex items-center gap-6 mb-4">
+      <div className="mb-5 flex items-center gap-6">
         {/* Avatar */}
         <div className={`rounded-full ${posts.length > 0 ? 'story-ring p-0.5' : ''}`}>
           <div className="relative">
@@ -39,8 +39,8 @@ export default function ProfileHeader({ user, posts, navigate, onUpdate }) {
             { label: 'Following', value: user.following?.length || 0 },
           ].map(({ label, value }) => (
             <div key={label} className="flex flex-col items-center">
-              <span className="font-bold text-base text-gray-900 dark:text-white font-poppins">{value}</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
+              <span className="font-poppins text-lg font-bold tracking-tight text-slate-900 dark:text-white">{value}</span>
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{label}</span>
             </div>
           ))}
         </div>
@@ -49,7 +49,7 @@ export default function ProfileHeader({ user, posts, navigate, onUpdate }) {
       {/* Bio */}
       <div className="mb-3">
         <p className="font-bold text-sm text-gray-900 dark:text-white font-poppins">{user.name}</p>
-        {user.bio && <p className="text-sm text-gray-700 dark:text-gray-300 mt-0.5">{user.bio}</p>}
+        {user.bio && <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{user.bio}</p>}
       </div>
 
       {/* Action buttons */}
@@ -57,7 +57,7 @@ export default function ProfileHeader({ user, posts, navigate, onUpdate }) {
         <div className="flex gap-2">
           <button
             onClick={() => navigate('edit-profile')}
-            className="flex-1 py-1.5 rounded-lg border border-gray-300 dark:border-slate-600 text-sm font-semibold text-gray-800 dark:text-white"
+            className="flex-1 rounded-xl border border-slate-200 py-3 text-sm font-semibold text-slate-700 transition-colors active:bg-slate-50 dark:border-slate-700 dark:text-white dark:active:bg-slate-800"
           >
             Edit Profile
           </button>
@@ -76,7 +76,7 @@ export default function ProfileHeader({ user, posts, navigate, onUpdate }) {
         <div className="flex gap-2">
           <button
             onClick={handleFollow}
-            className={`flex-1 py-1.5 rounded-lg text-sm font-semibold ${
+            className={`flex-1 rounded-xl py-3 text-sm font-semibold ${
               isFollowing
                 ? 'border border-gray-300 dark:border-slate-600 text-gray-800 dark:text-white'
                 : 'text-white gradient-bg'
