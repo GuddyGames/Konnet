@@ -106,8 +106,8 @@ export default function Chat({ conversationId, navigate }) {
   };
 
   return (
-    <div className="h-[100dvh] min-h-0 flex flex-col overflow-hidden bg-white dark:bg-slate-900">
-      <div className="shrink-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-3 flex items-center gap-3">
+    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[#F7F8FC] dark:bg-[#0B1020]">
+      <div className="z-30 flex shrink-0 items-center gap-3 border-b border-slate-100 bg-white/95 px-4 pb-3 pt-[calc(.75rem+env(safe-area-inset-top))] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95">
         <button onClick={() => navigate('messages')} aria-label="Back">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
@@ -127,10 +127,10 @@ export default function Chat({ conversationId, navigate }) {
         })}
         <div ref={bottomRef}/>
       </div>
-      <div className="fixed left-0 z-40 w-full px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-white/95 dark:bg-slate-900/95 border-t border-gray-200 dark:border-slate-700 backdrop-blur-xl" style={{ bottom: "calc(var(--keyboard-inset, 0px) + env(safe-area-inset-bottom))" }}>
+      <div className="fixed left-0 z-40 w-full border-t border-slate-100 bg-white/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95" style={{ bottom: "calc(var(--keyboard-inset, 0px) + env(safe-area-inset-bottom))" }}>
         <div className="flex items-center gap-2">
-          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} placeholder="Message..." className="flex-1 min-w-0 bg-gray-100 dark:bg-slate-800 rounded-full px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30"/>
-          <button onClick={send} disabled={!input.trim() || sending || loading} className="w-9 h-9 rounded-full gradient-bg flex items-center justify-center disabled:opacity-40" aria-label="Send message">
+          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} placeholder="Message..." className="flex-1 min-w-0 rounded-full border border-slate-100 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800 text-base text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30"/>
+          <button onClick={send} disabled={!input.trim() || sending || loading} className="h-11 w-11 rounded-full gradient-bg shadow-md shadow-blue-600/20 flex items-center justify-center disabled:opacity-40" aria-label="Send message">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
