@@ -95,7 +95,7 @@ export default function Chat({ conversationId, navigate }) {
       </div>
 
       {/* Input */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm px-4 py-3 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700">
+      <div className="fixed bottom-0 left-0 z-30 w-full px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-white/95 dark:bg-slate-900/95 border-t border-gray-200 dark:border-slate-700 backdrop-blur-xl">
         <div className="flex items-center gap-2">
           <input
             value={input}
