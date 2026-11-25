@@ -14,6 +14,25 @@ export default function Chat({ conversationId, navigate }) {
   const [input, setInput] = useState('');
   const bottomRef = useRef();
 
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const updateKeyboardInset = () => {
+      const inset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      document.documentElement.style.setProperty('--keyboard-inset', inset + 'px');
+    };
+    updateKeyboardInset();
+    viewport.addEventListener('resize', updateKeyboardInset);
+    viewport.addEventListener('scroll', updateKeyboardInset);
+    window.addEventListener('orientationchange', updateKeyboardInset);
+    return () => {
+      viewport.removeEventListener('resize', updateKeyboardInset);
+      viewport.removeEventListener('scroll', updateKeyboardInset);
+      window.removeEventListener('orientationchange', updateKeyboardInset);
+      document.documentElement.style.removeProperty('--keyboard-inset');
+    };
+  }, []);
+
   // Listen live to this conversation — new messages appear instantly,
   // even ones sent from the other person's device, with no refresh needed.
   useEffect(() => {
@@ -54,9 +73,9 @@ export default function Chat({ conversationId, navigate }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-900">
+    <div className="h-[100dvh] min-h-0 flex flex-col overflow-hidden bg-white dark:bg-slate-900">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center gap-3">
+      <div className="shrink-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-3 flex items-center gap-3">
         <button onClick={() => navigate('messages')}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="2">
             <polyline points="15 18 9 12 15 6"/>
@@ -77,7 +96,7 @@ export default function Chat({ conversationId, navigate }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-hide pb-24">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-4 space-y-3 scrollbar-hide pb-6">
         {(convo?.messages || []).map(msg => {
           const isMe = msg.fromId === currentUser?.id;
           return (
@@ -95,14 +114,14 @@ export default function Chat({ conversationId, navigate }) {
       </div>
 
       {/* Input */}
-      <div className="fixed bottom-0 left-0 z-30 w-full px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-white/95 dark:bg-slate-900/95 border-t border-gray-200 dark:border-slate-700 backdrop-blur-xl">
+      <div className="fixed left-0 z-40 w-full px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-white/95 dark:bg-slate-900/95 border-t border-gray-200 dark:border-slate-700 backdrop-blur-xl" style={{ bottom: "calc(var(--keyboard-inset, 0px) + env(safe-area-inset-bottom))" }}>
         <div className="flex items-center gap-2">
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && send()}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
             placeholder="Message..."
-            className="flex-1 bg-gray-100 dark:bg-slate-800 rounded-full px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none"
+            className="flex-1 min-w-0 bg-gray-100 dark:bg-slate-800 rounded-full px-4 py-3 text-base text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30"
           />
           <button
             onClick={send}
