@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useUser } from '../context/UserContext';
 import { getUserConversations } from '../utils/supabaseMessages';
 import { formatTime } from '../utils/helpers';
@@ -10,58 +10,59 @@ export default function Messages({ navigate }) {
   const [convos, setConvos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     let active = true;
     const load = async () => {
       if (!currentUser?.id) { setLoading(false); return; }
-      setLoading(true);
-      setError('');
+      setLoading(true); setError('');
       try {
         const rows = await getUserConversations(currentUser.id);
         if (active) setConvos(rows);
       } catch (err) {
         console.error('Failed to load Supabase conversations:', err);
         if (active) setError('Could not load your messages. Please try again.');
-      } finally {
-        if (active) setLoading(false);
-      }
+      } finally { if (active) setLoading(false); }
     };
     load();
     return () => { active = false; };
   }, [currentUser?.id]);
 
+  const filtered = useMemo(() => convos.filter(convo =>
+    (convo.other?.username || '').toLowerCase().includes(search.toLowerCase()) ||
+    (convo.lastMessage || '').toLowerCase().includes(search.toLowerCase())
+  ), [convos, search]);
+
   return (
-    <div className="min-h-[100dvh] bg-[#F5F7FB] pb-[env(safe-area-inset-bottom)] dark:bg-[#0B1020]">
-      <div className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-100 bg-white/95 px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95">
-        <button onClick={() => navigate('home')} aria-label="Back">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <h2 className="flex-1 font-poppins text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{currentUser?.username}</h2>
-      </div>
-      {loading ? (
-        <div className="flex justify-center py-20 text-gray-400">Loading messages...</div>
-      ) : error ? (
-        <div className="flex flex-col items-center py-20 gap-3"><p className="text-sm text-red-500">{error}</p><button onClick={() => window.location.reload()} className="text-blue-600 font-semibold">Retry</button></div>
-      ) : convos.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <p className="text-gray-500 font-semibold">No messages yet</p>
-          <p className="text-gray-400 text-sm text-center">Visit someone's profile and tap Message to start a conversation.</p>
+    <main className="konnet-messages-page min-h-[100dvh] pb-[env(safe-area-inset-bottom)]">
+      <header className="konnet-messages-header sticky top-0 z-30">
+        <div className="flex items-center gap-3">
+          <h1 className="font-poppins text-[25px] font-bold tracking-tight">Chat</h1>
+          <label className="konnet-chat-search flex min-w-0 flex-1 items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="10.8" cy="10.8" r="7.3"/><path d="m16.2 16.2 4.3 4.3"/></svg>
+            <input aria-label="Search conversations" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search" />
+          </label>
+          <button type="button" onClick={() => navigate('explore')} className="konnet-chat-add" aria-label="Start a new chat">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
         </div>
-      ) : (
-        <div className="mx-3 mt-3 overflow-hidden rounded-[22px] border border-slate-100 bg-white px-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          {convos.map(convo => (
-            <div key={convo.id} className="flex w-full items-center gap-3 rounded-xl px-1 py-4 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800" onClick={() => navigate(`chat/${convo.id}`)}>
-              <div className="relative"><Avatar user={convo.other} size={52}/><PresenceDot userId={convo.other.id}/></div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-[15px] text-slate-900 dark:text-white font-poppins">{convo.other.username}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{convo.lastMessage}</p>
-              </div>
-              <span className="text-xs text-gray-400 flex-shrink-0">{formatTime(convo.lastTimestamp)}</span>
-            </div>
+      </header>
+
+      {loading ? <div className="py-20 text-center text-sm text-slate-400">Loading messages...</div>
+      : error ? <div className="flex flex-col items-center gap-3 py-20"><p className="text-sm text-red-500">{error}</p><button onClick={() => window.location.reload()} className="font-semibold text-blue-600">Retry</button></div>
+      : filtered.length === 0 ? <div className="flex flex-col items-center gap-3 px-8 py-24 text-center"><div className="konnet-chat-empty-icon">✉</div><p className="font-semibold text-slate-700 dark:text-white">{search ? 'No matching conversations' : 'No messages yet'}</p><p className="text-sm text-slate-400">{search ? 'Try another name or keyword.' : "Visit someone's profile and tap Message to start a conversation."}</p>{!search && <button onClick={() => navigate('explore')} className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white">Find people</button>}</div>
+      : <section className="konnet-conversation-list" aria-label="Conversations">
+          {filtered.map(convo => (
+            <button type="button" key={convo.id} className="konnet-conversation-row" onClick={() => navigate(`chat/${convo.id}`)}>
+              <span className="relative shrink-0"><Avatar user={convo.other} size={54}/><PresenceDot userId={convo.other.id}/></span>
+              <span className="min-w-0 flex-1 text-left">
+                <span className="flex items-center justify-between gap-2"><strong className="truncate text-[15px] font-semibold text-slate-900 dark:text-white">{convo.other.username}</strong><time className="shrink-0 text-[11px] text-slate-400">{formatTime(convo.lastTimestamp)}</time></span>
+                <span className="mt-1 block truncate text-[13px] text-slate-500 dark:text-slate-400">{convo.lastMessage || 'Start a conversation'}</span>
+              </span>
+            </button>
           ))}
-        </div>
-      )}
-    </div>
+        </section>}
+    </main>
   );
 }
