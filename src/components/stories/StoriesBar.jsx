@@ -47,8 +47,8 @@ export default function StoriesBar({ navigate }) {
 
   return (
     <>
-      <div className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 py-3">
-        <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4">
+      <div className="border-b border-slate-100 bg-white py-4 dark:border-slate-800 dark:bg-slate-950">
+        <div className="flex gap-5 overflow-x-auto scrollbar-hide px-4">
           {/* Your story */}
           <div className="flex flex-col items-center gap-1 flex-shrink-0 cursor-pointer" onClick={() => {
             if (hasMyStory) setActiveStory({ author: currentUser, stories: myStories });
@@ -56,7 +56,7 @@ export default function StoriesBar({ navigate }) {
           }}>
             <div className="relative">
               <div className={`rounded-full p-0.5 ${hasMyStory ? 'story-ring' : 'border-2 border-dashed border-gray-300 dark:border-gray-600'}`}>
-                <Avatar user={currentUser} size={56} />
+                <Avatar user={currentUser} size={58} />
               </div>
               {!hasMyStory && (
                 <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center border-2 border-white">
@@ -64,7 +64,7 @@ export default function StoriesBar({ navigate }) {
                 </div>
               )}
             </div>
-            <span className="text-xs text-gray-500 dark:text-gray-400 max-w-14 text-center truncate">Your story</span>
+            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 max-w-16 text-center truncate">Your story</span>
           </div>
 
           {/* Others' stories */}
@@ -78,7 +78,7 @@ export default function StoriesBar({ navigate }) {
                 <div className={`rounded-full p-0.5 ${viewed ? 'border-2 border-gray-300 dark:border-gray-600' : 'story-ring'}`}>
                   <Avatar user={author} size={56} />
                 </div>
-                <span className="text-xs text-gray-700 dark:text-gray-300 max-w-14 text-center truncate">{author.username}</span>
+                <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 max-w-16 text-center truncate">{author.username}</span>
               </div>
             );
           })}
