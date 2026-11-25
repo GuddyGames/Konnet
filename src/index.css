@@ -1,23 +1,120 @@
-@import url(‘https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap’);
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: light;
+  --konnet-blue: #2563EB;
+  --konnet-purple: #7C3AED;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+html {
+  min-height: 100%;
+  background: #FAFAFA;
+  overscroll-behavior-y: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #FAFAFA;
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 @layer base {
   * {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
   }
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: #FAFAFA;
+  button, input, textarea, select {
+    font: inherit;
+  }
+
+  input, textarea, select {
+    font-size: 16px;
+  }
+
+  button {
+    touch-action: manipulation;
   }
 
   ::-webkit-scrollbar {
     display: none;
+  }
+}
+
+.app-shell {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding-top: var(--safe-top);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+  overflow-x: clip;
+  background: #fff;
+  isolation: isolate;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dark .app-shell {
+  background: #0f172a;
+}
+
+.app-page-with-nav {
+  padding-bottom: calc(5rem + var(--safe-bottom));
+}
+
+.app-bottom-nav {
+  padding-bottom: calc(0.5rem + var(--safe-bottom));
+  padding-left: max(0.75rem, var(--safe-left));
+  padding-right: max(0.75rem, var(--safe-right));
+  min-height: calc(4rem + var(--safe-bottom));
+}
+
+@media (min-width: 600px) {
+  .app-shell {
+    max-width: 480px;
+  }
+
+  .app-bottom-nav {
+    left: 50%;
+    width: min(100%, 480px);
+    transform: translateX(-50%);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .app-shell {
+    max-width: none;
+  }
+
+  .app-bottom-nav {
+    min-height: 3.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: calc(0.25rem + var(--safe-bottom));
+  }
+
+  .app-bottom-nav button {
+    min-height: 2.75rem;
   }
 }
 
@@ -45,18 +142,26 @@ button {
 }
 
 button:active {
-  transform: scale(0.95);
+  transform: scale(0.97);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--konnet-blue);
+  outline-offset: 2px;
 }
 
 .gradient-text {
-  background: linear-gradient(90deg, #2563EB, #7C3AED);
+  background: linear-gradient(90deg, var(--konnet-blue), var(--konnet-purple));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gradient-bg {
-  background: linear-gradient(135deg, #2563EB, #7C3AED);
+  background: linear-gradient(135deg, var(--konnet-blue), var(--konnet-purple));
 }
 
 .gold-gradient {
@@ -64,7 +169,7 @@ button:active {
 }
 
 .story-ring {
-  background: linear-gradient(135deg, #2563EB, #7C3AED);
+  background: linear-gradient(135deg, var(--konnet-blue), var(--konnet-purple));
   padding: 2px;
   border-radius: 50%;
 }
