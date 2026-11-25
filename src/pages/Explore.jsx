@@ -1,122 +1,120 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 import { useUser } from '../context/UserContext';
-import { searchUsers } from '../utils/firestoreSearch';
-import { getGradient } from '../utils/helpers';
+import { getAvatarColor } from '../utils/helpers';
 import Avatar from '../components/common/Avatar';
 import BottomNav from '../components/navigations/BottomNav';
-import { getAllPosts } from '../utils/firestorePosts';
+
+const mapProfile = (profile) => ({
+  id: profile.id,
+  username: profile.username,
+  name: profile.display_name || profile.username,
+  avatarImage: profile.avatar_url || null,
+  avatarColor: getAvatarColor(profile.username || 'konnet'),
+});
 
 export default function Explore({ navigate }) {
-  const { currentUser, getUserById } = useUser();
+  const { currentUser } = useUser();
   const [term, setTerm] = useState('');
   const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false); 
-  const [posts, setPosts] = useState([]);
-  const [postsLoading, setPostsloading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    const loadPosts = async () => {
-      setPostsloading(true);
-      try {
-        const all = await getAllPosts();
-        setPosts(all);
-      } catch (err) {
-        console.error('Failed to load explore postd:', err);
-      } finally {
-        setPostsloading(false);
-      }
-    };
-    loadPosts();
-  }, []);
-
-  const handleSearch = async (value) => {
-    setTerm(value);
-    if (!value.trim()) {
-      setResults([]);
-      setSearched(false);
-      return;
-    }
+  const findPeople = async (searchTerm = '') => {
     setLoading(true);
-    setSearched(true);
+    setError('');
     try {
-      const found = await searchUsers(value);
-      setResults(found);
-    }
-    catch (err) {
-      console.error('Search failed:', err);
+      let query = supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url')
+        .neq('id', currentUser.id)
+        .order('created_at', { ascending: false })
+        .limit(40);
+
+      const cleanTerm = searchTerm.trim().replace(/[,%()]/g, '');
+      if (cleanTerm) {
+        query = query.ilike('username', '%' + cleanTerm + '%');
+      }
+
+      const { data, error: queryError } = await query;
+      if (queryError) throw queryError;
+      setResults((data || []).map(mapProfile));
+    } catch (err) {
+      console.error('Could not discover Konnet accounts:', err);
+      setError('We couldn’t find accounts right now. Please try again.');
+      setResults([]);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (currentUser?.id) findPeople();
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (currentUser?.id) findPeople(term);
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [term, currentUser?.id]);
+
   return (
     <div className="app-page-with-nav min-h-[100dvh] bg-white dark:bg-slate-900">
-      <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 py-3">
-        <input
-          value={term}
-          onChange={e => handleSearch(e.target.value)}
-          placeholder="Search users..."
-          className="w-full bg-gray-100 dark:bg-slate-800 rounded-full px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none"
-        />
+      <div className="sticky top-0 z-30 border-b border-gray-200 bg-white px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-3 dark:border-slate-700 dark:bg-slate-900">
+        <h1 className="mb-3 text-xl font-bold text-gray-900 dark:text-white font-poppins">Discover people</h1>
+        <div className="flex items-center gap-2 rounded-2xl bg-gray-100 px-4 dark:bg-slate-800">
+          <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
+            <circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>
+          </svg>
+          <input
+            value={term}
+            onChange={(event) => setTerm(event.target.value)}
+            placeholder="Search by username..."
+            aria-label="Search accounts by username"
+            className="min-w-0 flex-1 bg-transparent py-3 text-base text-gray-900 outline-none dark:text-white"
+          />
+          {term && <button type="button" onClick={() => setTerm('')} className="p-2 text-sm text-blue-600">Clear</button>}
+        </div>
       </div>
 
-      {/* Show search results when actively searching */}
-      {term.trim() ? (
-        loading ? (
-          <div className="flex justify-center py-16 text-gray-400">Searching...</div>
-        ) : searched && results.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-2">
-            <p className="text-gray-500 font-semibold">No users found</p>
-            <p className="text-gray-400 text-sm">Try a different username</p>
+      <section className="px-4 py-4">
+        <h2 className="mb-3 text-sm font-semibold text-gray-500 dark:text-gray-400">
+          {term ? 'Search results' : 'People on Konnet'}
+        </h2>
+        {loading ? (
+          <div className="py-14 text-center text-sm text-gray-400" role="status">Finding accounts...</div>
+        ) : error ? (
+          <div className="py-12 text-center">
+            <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">{error}</p>
+            <button type="button" onClick={() => findPeople(term)} className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white">Try again</button>
+          </div>
+        ) : results.length === 0 ? (
+          <div className="py-14 text-center">
+            <p className="font-semibold text-gray-700 dark:text-gray-200">No accounts found</p>
+            <p className="mt-1 text-sm text-gray-400">Try another username or invite someone to join Konnet.</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-100 dark:divide-slate-800">
-            {results.map(user => (
-              <div
+            {results.map((user) => (
+              <button
                 key={user.id}
-                className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                onClick={() => navigate(`profile/${user.username}`)}
+                type="button"
+                onClick={() => navigate('profile/' + user.username)}
+                className="flex w-full items-center gap-3 py-3 text-left active:bg-gray-50 dark:active:bg-slate-800"
               >
-                
-
-              <Avatar user={user} size={48} />
-                <div>
-                  <p className="font-semibold text-sm text-gray-900 dark:text-white font-poppins">{user.username}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{user.name}</p>
-                </div>
-              </div>
+                <Avatar user={user} size={48} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold text-gray-900 dark:text-white">{user.username}</span>
+                  <span className="block truncate text-sm text-gray-500 dark:text-gray-400">{user.name}</span>
+                </span>
+                <span className="rounded-full border border-gray-200 px-4 py-1.5 text-xs font-semibold text-gray-700 dark:border-slate-600 dark:text-gray-200">View</span>
+              </button>
             ))}
           </div>
-        )
-      ) : (
-        /* Otherwise show the browsable post grid */
-        postsLoading ? (
-          <div className="flex justify-center py-16 text-gray-400">Loading posts...</div>
-        ) : posts.length === 0 ? (
-          <div className="flex justify-center py-16 text-gray-400">No posts yet</div>
-        ) : (
-          <div className="grid grid-cols-3 gap-0.5">
-            {posts.map(post => (
-              <div
-                key={post.id}
-                className="aspect-square cursor-pointer"
-                onClick={() => navigate(`post/${post.id}`)}
-              >
-                {post.image ? (
-                  <img src={post.image} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 dark:bg-slate-700" />
-                )}
-              </div>
-            ))}
-          </div>
-        )
-      )}
-
+        )}
+      </section>
       <BottomNav activePage="explore" navigate={navigate} />
     </div>
   );
 }
-
-
-
