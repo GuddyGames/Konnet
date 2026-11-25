@@ -78,6 +78,9 @@ export default function Chat({ conversationId, navigate }) {
         <button type="button" onClick={() => navigate('messages')} aria-label="Back to chats" className="konnet-chat-back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg></button>
         {other && <button type="button" onClick={() => navigate(`profile/${other.username}`)} className="flex min-w-0 flex-1 items-center gap-3 text-left"><span className="relative"><Avatar user={other} size={44}/><PresenceDot userId={other.id}/></span><span className="min-w-0"><strong className="block truncate text-[15px] font-semibold text-slate-900 dark:text-white">{other.name}</strong><small className="text-xs text-slate-400">On Konnet</small></span></button>}
         {other && <button type="button" onClick={() => navigate(`profile/${other.username}`)} className="konnet-chat-profile-button">Profile</button>}
+        <span className="konnet-chat-call-placeholder" aria-hidden="true" title="Voice calling — coming later">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 2.7a2 2 0 0 1-.6 1.8L7.7 9.5a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 1.8-.6l2.7.5a2 2 0 0 1 1.5 1.8Z"/></svg>
+        </span>
       </header>
       <section className="konnet-chat-thread flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-5 scrollbar-hide" aria-label="Messages">
         {loading && <p className="py-8 text-center text-sm text-slate-400">Loading conversation...</p>}
@@ -96,8 +99,10 @@ export default function Chat({ conversationId, navigate }) {
       <footer className="konnet-chat-composer" style={{ bottom: 'var(--keyboard-inset, 0px)' }}>
         <form className="flex items-center gap-2" onSubmit={e => { e.preventDefault(); send(); }}>
           <div className="konnet-chat-input-wrap flex min-w-0 flex-1 items-center gap-2">
+            <span className="konnet-chat-tool-placeholder" aria-hidden="true" title="Attachments — coming later"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m21.4 11.1-8.9 8.9a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg></span>
             <input aria-label="Write a message" value={input} onChange={e => setInput(e.target.value)} placeholder="Write messages..." />
           </div>
+          <span className="konnet-chat-tool-placeholder konnet-chat-mic-placeholder" aria-hidden="true" title="Voice messages — coming later"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/></svg></span>
           <button type="submit" disabled={!input.trim() || sending || loading} className="konnet-chat-send" aria-label="Send message"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M2.4 20.4 22 12 2.4 3.6l.1 6.5 13.8 1.9-13.8 1.9z"/></svg></button>
         </form>
       </footer>
