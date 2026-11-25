@@ -1,104 +1,69 @@
-import { useUser} from '../../context/UserContext';
+import { useUser } from '../../context/UserContext';
 import { findOrCreateConversation } from '../../utils/supabaseMessages';
 import Avatar from '../common/Avatar';
-import Settings from '../../pages/Settings';
 import PresenceDot from '../common/PresenceDot';
-
 
 export default function ProfileHeader({ user, posts, navigate, onUpdate }) {
   const { currentUser, toggleFollow } = useUser();
   const isMe = currentUser?.id === user?.id;
   const isFollowing = currentUser?.following?.includes(user?.id);
+  if (!user) return null;
 
   const handleFollow = () => {
     toggleFollow(user.id);
     onUpdate?.();
   };
-  
 
-  if (!user) return null;
- 
+  const shareProfile = async () => {
+    const url = `${window.location.origin}?profile=${user.username}`;
+    try {
+      if (navigator.share) await navigator.share({ title: `${user.username} on Konnet`, url });
+      else { await navigator.clipboard.writeText(url); alert('Profile link copied!'); }
+    } catch (error) { console.error('Profile share failed:', error); }
+  };
 
   return (
-    <div className="bg-white px-4 pb-5 pt-5 dark:bg-slate-950">
-      {/* Top row */}
-      <div className="mb-5 flex items-center gap-6">
-        {/* Avatar */}
-        <div className={`rounded-full ${posts.length > 0 ? 'story-ring p-0.5' : ''}`}>
-          <div className="relative">
-            <Avatar user={user} size={80} />
-            <PresenceDot userId={user.id} />
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="flex gap-5 flex-1">
-          {[
-            { label: 'Posts', value: posts.length },
-            { label: 'Followers', value: user.followers?.length || 0 },
-            { label: 'Following', value: user.following?.length || 0 },
-          ].map(({ label, value }) => (
-            <div key={label} className="flex flex-col items-center">
-              <span className="font-poppins text-lg font-bold tracking-tight text-slate-900 dark:text-white">{value}</span>
-              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{label}</span>
-            </div>
-          ))}
+    <section className="konnet-profile-hero">
+      <div className="konnet-profile-avatar">
+        <div className="relative">
+          <Avatar user={user} size={104} />
+          <PresenceDot userId={user.id} />
         </div>
       </div>
-
-      {/* Bio */}
-      <div className="mb-3">
-        <p className="font-bold text-sm text-gray-900 dark:text-white font-poppins">{user.name}</p>
-        {user.bio && <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{user.bio}</p>}
-      </div>
-
-      {/* Action buttons */}
-      {isMe ? (
-        <div className="flex gap-2">
-          <button
-            onClick={() => navigate('edit-profile')}
-            className="flex-1 rounded-xl border border-slate-200 py-3 text-sm font-semibold text-slate-700 transition-colors active:bg-slate-50 dark:border-slate-700 dark:text-white dark:active:bg-slate-800"
-          >
-            Edit Profile
-          </button>
-          <button
-            onClick={async () => {
-              const url = `${window.location.origin}?profile=${user.username}`;
-              if (navigator.share) await navigator.share({ title: `${user.username} on Konnet`, url });
-              else { await navigator.clipboard.writeText(url); alert('Profile link copied!'); }
-            }}
-            className="flex-1 py-1.5 rounded-lg border border-gray-300 dark:border-slate-600 text-sm font-semibold text-gray-800 dark:text-white"
-          >
-            Share Profile
-          </button>
-        </div>
-      ) : (
-        <div className="flex gap-2">
-          <button
-            onClick={handleFollow}
-            className={`flex-1 rounded-xl py-3 text-sm font-semibold ${
-              isFollowing
-                ? 'border border-gray-300 dark:border-slate-600 text-gray-800 dark:text-white'
-                : 'text-white gradient-bg'
-            }`}
-          >
-            {isFollowing ? 'Following' : 'Follow'}
-            </button>
-          <button   onClick={async () => {
-              const convoId = await findOrCreateConversation(currentUser.id, user.id);
-              navigate(`chat/${convoId}`);
-          }} className="flex-1 py-1.5 rounded-lg border border-gray-300 dark:border-slate-600 text-sm font-semibold text-gray-800 dark:text-white">
-            Message
-          </button>
+      <h1 className="font-poppins text-[23px] font-bold leading-tight text-white">{user.name || user.username}</h1>
+      <p className="mt-1 text-sm font-medium text-fuchsia-300">@{user.username}</p>
+      {(user.location || user.profession || user.occupation) && (
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/85">
+          {user.location && <span className="flex items-center gap-1.5"><span>⌖</span>{user.location}</span>}
+          {(user.profession || user.occupation) && <span className="flex items-center gap-1.5"><span>▣</span>{user.profession || user.occupation}</span>}
         </div>
       )}
-    </div>
+      {user.bio && <p className="mx-auto mt-3 max-w-[300px] text-center text-sm leading-5 text-white/80">{user.bio}</p>}
+      <div className="mt-6 grid grid-cols-3 gap-2 text-center">
+        {[
+          { label: 'Posts', value: posts.length },
+          { label: 'Followers', value: user.followers?.length || 0 },
+          { label: 'Following', value: user.following?.length || 0 },
+        ].map(({ label, value }) => (
+          <div key={label} className="flex flex-col gap-1">
+            <span className="font-poppins text-lg font-bold text-white">{value.toLocaleString()}</span>
+            <span className="text-xs font-medium text-white/75">{label}</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-5 flex gap-2">
+        {isMe ? (
+          <>
+            <button type="button" onClick={() => navigate('edit-profile')} className="flex-1 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#352B62]">Edit profile</button>
+            <button type="button" onClick={shareProfile} className="flex-1 rounded-xl border border-white/35 px-4 py-2.5 text-sm font-semibold text-white">Share profile</button>
+          </>
+        ) : (
+          <>
+            <button type="button" onClick={handleFollow} className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold ${isFollowing ? 'border border-white/40 text-white' : 'bg-white text-[#352B62]'}`}>{isFollowing ? 'Following' : 'Follow'}</button>
+            <button type="button" onClick={async () => { const convoId = await findOrCreateConversation(currentUser.id, user.id); navigate(`chat/${convoId}`); }} className="flex-1 rounded-xl border border-white/40 px-4 py-2.5 text-sm font-semibold text-white">Message</button>
+          </>
+        )}
+      </div>
+    </section>
   );
 }
-
-
-
-
-
-
-
