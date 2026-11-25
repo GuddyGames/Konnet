@@ -13,7 +13,7 @@ declare
 begin
   generated_username := coalesce(
     nullif(lower(trim(new.raw_user_meta_data ->> 'username')), ''),
-    'user_' || left(replace(new.id::text, '-', ''), 12)
+    'pending_' || left(replace(new.id::text, '-', ''), 12)
   );
 
   chosen_name := coalesce(
