@@ -19,37 +19,20 @@ export default function Chat({ conversationId, navigate }) {
   useEffect(() => {
     const viewport = window.visualViewport;
     if (!viewport) return;
-    const updateKeyboardInset = () => {
-      const inset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
-      document.documentElement.style.setProperty('--keyboard-inset', inset + 'px');
-    };
-    updateKeyboardInset();
-    viewport.addEventListener('resize', updateKeyboardInset);
-    viewport.addEventListener('scroll', updateKeyboardInset);
-    window.addEventListener('orientationchange', updateKeyboardInset);
-    return () => {
-      viewport.removeEventListener('resize', updateKeyboardInset);
-      viewport.removeEventListener('scroll', updateKeyboardInset);
-      window.removeEventListener('orientationchange', updateKeyboardInset);
-      document.documentElement.style.removeProperty('--keyboard-inset');
-    };
+    const update = () => document.documentElement.style.setProperty('--keyboard-inset', Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop) + 'px');
+    update(); viewport.addEventListener('resize', update); viewport.addEventListener('scroll', update); window.addEventListener('orientationchange', update);
+    return () => { viewport.removeEventListener('resize', update); viewport.removeEventListener('scroll', update); window.removeEventListener('orientationchange', update); document.documentElement.style.removeProperty('--keyboard-inset'); };
   }, []);
 
   useEffect(() => {
     if (!conversationId || !currentUser?.id) return;
     let active = true;
     const load = async () => {
-      setLoading(true);
-      setError('');
+      setLoading(true); setError('');
       try {
-        const { data: conversation, error: conversationError } = await supabase
-          .from('conversations')
-          .select('id,direct_user_one,direct_user_two')
-          .eq('id', conversationId)
-          .single();
+        const { data: conversation, error: conversationError } = await supabase.from('conversations').select('id,direct_user_one,direct_user_two').eq('id', conversationId).single();
         if (conversationError) throw conversationError;
-        const otherId = conversation.direct_user_one === currentUser.id
-          ? conversation.direct_user_two : conversation.direct_user_one;
+        const otherId = conversation.direct_user_one === currentUser.id ? conversation.direct_user_two : conversation.direct_user_one;
         const [{ data: profile, error: profileError }, initialMessages] = await Promise.all([
           supabase.from('profiles').select('id,username,display_name,bio,avatar_url,is_private,created_at').eq('id', otherId).maybeSingle(),
           getConversation(conversationId),
@@ -57,11 +40,7 @@ export default function Chat({ conversationId, navigate }) {
         if (profileError) throw profileError;
         if (!profile) throw new Error('This conversation participant is unavailable.');
         if (!active) return;
-        setOther({
-          id: profile.id, username: profile.username, name: profile.display_name || profile.username,
-          bio: profile.bio || '', avatarImage: profile.avatar_url || null,
-          isPrivate: Boolean(profile.is_private),
-        });
+        setOther({ id: profile.id, username: profile.username, name: profile.display_name || profile.username, bio: profile.bio || '', avatarImage: profile.avatar_url || null, isPrivate: Boolean(profile.is_private) });
         setMessages(initialMessages);
         await markConversationRead(conversationId, currentUser.id);
         setLoading(false);
@@ -71,70 +50,57 @@ export default function Chat({ conversationId, navigate }) {
       }
     };
     load();
-
     const unsubscribe = subscribeToConversation(conversationId, async row => {
       if (!active || row.deleted_at) return;
-      setMessages(previous => previous.some(message => message.id === row.id) ? previous : [
-        ...previous, { id: row.id, fromId: row.sender_id, text: row.content, timestamp: row.created_at },
-      ]);
-      if (row.sender_id !== currentUser.id) {
-        markConversationRead(conversationId, currentUser.id).catch(err => console.error('Read receipt failed:', err));
-      }
+      setMessages(previous => previous.some(message => message.id === row.id) ? previous : [...previous, { id: row.id, fromId: row.sender_id, text: row.content, timestamp: row.created_at }]);
+      if (row.sender_id !== currentUser.id) markConversationRead(conversationId, currentUser.id).catch(err => console.error('Read receipt failed:', err));
     });
     return () => { active = false; unsubscribe(); };
   }, [conversationId, currentUser?.id]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages.length]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length]);
 
   const send = async () => {
     const content = input.trim();
     if (!content || !currentUser?.id || sending) return;
-    setSending(true);
-    setInput('');
+    setSending(true); setInput('');
     try {
       const sent = await sendSupabaseMessage(conversationId, currentUser.id, content);
       setMessages(previous => previous.some(message => message.id === sent.id) ? previous : [...previous, sent]);
     } catch (err) {
-      console.error('Failed to send Supabase message:', err);
-      setInput(content);
-      setError('Message was not sent. Please try again.');
-    } finally {
-      setSending(false);
-    }
+      console.error('Failed to send Supabase message:', err); setInput(content); setError('Message was not sent. Please try again.');
+    } finally { setSending(false); }
   };
 
   return (
-    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[#F7F8FC] dark:bg-[#0B1020]">
-      <div className="z-30 flex shrink-0 items-center gap-3 border-b border-slate-100 bg-white/95 px-4 pb-3 pt-[calc(.75rem+env(safe-area-inset-top))] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95">
-        <button onClick={() => navigate('messages')} aria-label="Back">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-800 dark:text-gray-200" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        {other && <><div className="relative"><Avatar user={other} size={36}/><PresenceDot userId={other.id}/></div><span className="font-bold font-poppins text-gray-900 dark:text-white">{other.username}</span></>}
-      </div>
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-4 space-y-3 scrollbar-hide pb-6">
-        {loading ? <p className="text-center text-gray-400 py-8">Loading conversation...</p> : null}
-        {error && <p className="text-center text-sm text-red-500">{error}</p>}
+    <main className="konnet-chat-page flex h-[100dvh] min-h-0 flex-col overflow-hidden">
+      <header className="konnet-chat-header shrink-0">
+        <button type="button" onClick={() => navigate('messages')} aria-label="Back to chats" className="konnet-chat-back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg></button>
+        {other && <button type="button" onClick={() => navigate(`profile/${other.username}`)} className="flex min-w-0 flex-1 items-center gap-3 text-left"><span className="relative"><Avatar user={other} size={44}/><PresenceDot userId={other.id}/></span><span className="min-w-0"><strong className="block truncate text-[15px] font-semibold text-slate-900 dark:text-white">{other.name}</strong><small className="text-xs text-slate-400">On Konnet</small></span></button>}
+        {other && <button type="button" onClick={() => navigate(`profile/${other.username}`)} className="konnet-chat-profile-button">Profile</button>}
+      </header>
+      <section className="konnet-chat-thread flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-5 scrollbar-hide" aria-label="Messages">
+        {loading && <p className="py-8 text-center text-sm text-slate-400">Loading conversation...</p>}
+        {error && <p role="alert" className="mb-3 text-center text-sm text-red-500">{error}</p>}
         {messages.map(msg => {
           const isMe = msg.fromId === currentUser?.id;
-          return <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-xs px-4 py-2 rounded-2xl text-sm ${isMe ? 'text-white rounded-br-sm' : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-white rounded-bl-sm'}`} style={isMe ? { background: 'linear-gradient(135deg, #2563EB, #7C3AED)' } : {}}>
-              {msg.text}
-              <p className={`text-xs mt-1 ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>{formatTime(msg.timestamp)}</p>
+          return <div key={msg.id} className={`mb-3 flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[82%] px-4 py-3 text-[14px] leading-5 shadow-sm ${isMe ? 'konnet-message-out' : 'konnet-message-in'}`}>
+              <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+              <p className={`mt-1 text-right text-[10px] ${isMe ? 'text-white/70' : 'text-slate-400'}`}>{formatTime(msg.timestamp)} {isMe ? '✓✓' : ''}</p>
             </div>
           </div>;
         })}
         <div ref={bottomRef}/>
-      </div>
-      <div className="fixed left-0 z-40 w-full border-t border-slate-100 bg-white/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95" style={{ bottom: "calc(var(--keyboard-inset, 0px) + env(safe-area-inset-bottom))" }}>
-        <div className="flex items-center gap-2">
-          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} placeholder="Message..." className="flex-1 min-w-0 rounded-full border border-slate-100 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800 text-base text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30"/>
-          <button onClick={send} disabled={!input.trim() || sending || loading} className="h-11 w-11 rounded-full gradient-bg shadow-md shadow-blue-600/20 flex items-center justify-center disabled:opacity-40" aria-label="Send message">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>
+      </section>
+      <footer className="konnet-chat-composer" style={{ bottom: 'var(--keyboard-inset, 0px)' }}>
+        <form className="flex items-center gap-2" onSubmit={e => { e.preventDefault(); send(); }}>
+          <div className="konnet-chat-input-wrap flex min-w-0 flex-1 items-center gap-2">
+            <input aria-label="Write a message" value={input} onChange={e => setInput(e.target.value)} placeholder="Write messages..." />
+          </div>
+          <button type="submit" disabled={!input.trim() || sending || loading} className="konnet-chat-send" aria-label="Send message"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M2.4 20.4 22 12 2.4 3.6l.1 6.5 13.8 1.9-13.8 1.9z"/></svg></button>
+        </form>
+      </footer>
+    </main>
   );
 }
