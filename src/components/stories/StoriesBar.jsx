@@ -6,8 +6,8 @@ import StoryViewer from './StoryViewer';
 
 export default function StoriesBar({ navigate }) {
   const { currentUser, getUserById } = useUser();
-  const [byAuthor, setByAuthor] = useState({}); // { authorId: [stories] }
-  const [authors, setAuthors] = useState({});   // { authorId: userProfile }
+  const [byAuthor, setByAuthor] = useState({});
+  const [authors, setAuthors] = useState({});
   const [loading, setLoading] = useState(true);
   const [activeStory, setActiveStory] = useState(null);
 
@@ -15,23 +15,16 @@ export default function StoriesBar({ navigate }) {
     setLoading(true);
     try {
       const stories = await getActiveStories();
-
-      // Group stories by author
-      const grouped = stories.reduce((acc, s) => {
-        if (!acc[s.authorId]) acc[s.authorId] = [];
-        acc[s.authorId].push(s);
+      const grouped = stories.reduce((acc, story) => {
+        if (!acc[story.authorId]) acc[story.authorId] = [];
+        acc[story.authorId].push(story);
         return acc;
       }, {});
       setByAuthor(grouped);
-
-      // Resolve each author's profile up front (async, can't do inline during render)
-      const authorIds = Object.keys(grouped);
-      const entries = await Promise.all(
-        authorIds.map(async id => [id, await getUserById(id)])
-      );
-      setAuthors(Object.fromEntries(entries.filter(([, u]) => u)));
-    } catch (err) {
-      console.error('Failed to load stories:', err);
+      const entries = await Promise.all(Object.keys(grouped).map(async id => [id, await getUserById(id)]));
+      setAuthors(Object.fromEntries(entries.filter(([, user]) => user)));
+    } catch (error) {
+      console.error('Failed to load stories:', error);
     } finally {
       setLoading(false);
     }
@@ -40,57 +33,37 @@ export default function StoriesBar({ navigate }) {
   useEffect(() => { if (currentUser) load(); }, [currentUser]);
 
   if (loading || !currentUser) return null;
-
   const myStories = byAuthor[currentUser.id] || [];
-  const hasMyStory = myStories.length > 0;
-  const otherAuthorIds = Object.keys(byAuthor).filter(id => id !== currentUser.id);
+  const otherIds = Object.keys(byAuthor).filter(id => id !== currentUser.id);
 
   return (
     <>
-      <div className="border-b border-slate-100 bg-white py-4 dark:border-slate-800 dark:bg-slate-950">
-        <div className="flex gap-5 overflow-x-auto scrollbar-hide px-4">
-          {/* Your story */}
-          <div className="flex flex-col items-center gap-1 flex-shrink-0 cursor-pointer" onClick={() => {
-            if (hasMyStory) setActiveStory({ author: currentUser, stories: myStories });
-            else navigate('new-story');
-          }}>
-            <div className="relative">
-              <div className={`rounded-full p-0.5 ${hasMyStory ? 'story-ring' : 'border-2 border-dashed border-gray-300 dark:border-gray-600'}`}>
-                <Avatar user={currentUser} size={58} />
-              </div>
-              {!hasMyStory && (
-                <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center border-2 border-white">
-                  <span className="text-white text-xs font-bold">+</span>
-                </div>
-              )}
-            </div>
-            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 max-w-16 text-center truncate">Your story</span>
-          </div>
-
-          {/* Others' stories */}
-          {otherAuthorIds.map(authorId => {
-            const author = authors[authorId];
+      <section aria-label="Stories" className="konnet-stories border-b border-slate-100/80 bg-white py-3 dark:border-slate-800 dark:bg-slate-950">
+        <div className="flex gap-4 overflow-x-auto px-4 scrollbar-hide">
+          <button type="button" className="flex w-[68px] shrink-0 flex-col items-center gap-1" onClick={() => myStories.length ? setActiveStory({ author: currentUser, stories: myStories }) : navigate('new-story')}>
+            <span className="relative rounded-full border-2 border-[#63CDB2] p-[3px]">
+              <Avatar user={currentUser} size={58} />
+              {!myStories.length && <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/15 text-3xl font-light text-white">+</span>}
+            </span>
+            <span className="max-w-full truncate text-[12px] font-semibold text-slate-900 dark:text-white">You</span>
+          </button>
+          {otherIds.map(id => {
+            const author = authors[id];
             if (!author) return null;
-            const authorStories = byAuthor[authorId];
-            const viewed = authorStories.every(s => s.viewers?.includes(currentUser.id));
+            const stories = byAuthor[id];
+            const viewed = stories.every(story => story.viewers?.includes(currentUser.id));
             return (
-              <div key={authorId} className="flex flex-col items-center gap-1 flex-shrink-0 cursor-pointer" onClick={() => setActiveStory({ author, stories: authorStories })}>
-                <div className={`rounded-full p-0.5 ${viewed ? 'border-2 border-gray-300 dark:border-gray-600' : 'story-ring'}`}>
-                  <Avatar user={author} size={56} />
-                </div>
-                <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 max-w-16 text-center truncate">{author.username}</span>
-              </div>
+              <button type="button" key={id} className="flex w-[68px] shrink-0 flex-col items-center gap-1" onClick={() => setActiveStory({ author, stories })}>
+                <span className={`rounded-full p-[3px] ${viewed ? 'border-2 border-slate-300 dark:border-slate-600' : 'border-2 border-[#63CDB2]'}`}>
+                  <Avatar user={author} size={58} />
+                </span>
+                <span className="max-w-full truncate text-[12px] font-semibold text-slate-900 dark:text-white">{author.username}</span>
+              </button>
             );
           })}
         </div>
-      </div>
-
-      {activeStory && (
-        <StoryViewer
-          story={activeStory}
-          onClose={() => { setActiveStory(null); load(); }}
-        />
-      )}
+      </section>
+      {activeStory && <StoryViewer story={activeStory} onClose={() => { setActiveStory(null); load(); }} />}
     </>
   );
 }
