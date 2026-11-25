@@ -20,6 +20,7 @@ import Reels from './pages/Reels';
 import Settings from './pages/Settings';
 import Loader from './components/common/Loader';
 import NotificationToast from './components/common/NotificationToast';
+import PWAInstallPrompt from './components/common/PWAInstallPrompt';
 import './styles/animations.css';
 
 
@@ -81,6 +82,7 @@ export default function App() {
   return (
     <>
       <NotificationToast />
+      <PWAInstallPrompt />
     <div className="max-w-sm mx-auto min-h-screen relative bg-white dark:bg-slate-900 animate-fadeSlideIn" key={name}>
       {name === 'home' && <Home navigate={navigate} />}
       {name === 'explore' && <Explore navigate={navigate} />}
