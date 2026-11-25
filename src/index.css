@@ -502,3 +502,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .konnet-auth-art { min-height:28vh; }
   .konnet-auth-panel { padding-top:24px; }
 }
+
+/* Future chat actions are visible placeholders only until product approval. */
+.konnet-chat-call-placeholder {
+  display:grid; place-items:center; width:42px; height:42px; flex:0 0 42px;
+  border-radius:999px; background:#172B62; color:#fff;
+}
+.konnet-chat-tool-placeholder {
+  display:grid; place-items:center; width:24px; height:32px; flex:0 0 24px;
+  color:#71809C; opacity:.8;
+}
+.konnet-chat-mic-placeholder {
+  width:44px; height:48px; flex-basis:44px; border-radius:14px;
+  background:#EEF1F8; color:#52627F;
+}
+.dark .konnet-chat-mic-placeholder { background:#202D46; color:#D5DDF0; }
