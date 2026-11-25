@@ -5,7 +5,7 @@ import BottomNav from '../components/navigations/BottomNav';
 
 export default function Home({ navigate }) {
   return (
-    <div className="pb-20">
+    <div className="app-page-with-nav">
       <TopNav navigate={navigate} />
       <StoriesBar navigate={navigate} />
       <Feed navigate={navigate} />
