@@ -75,6 +75,10 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+.dark {
+  color-scheme: dark;
+}
+
 .dark .app-shell {
   background: #0f172a;
 }
