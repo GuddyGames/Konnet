@@ -387,3 +387,118 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .konnet-profile-hero { padding-right: 16px; padding-left: 16px; border-bottom-right-radius: 64px; }
   .konnet-profile-avatar img { width: 94px; height: 94px; }
 }
+
+/* Konnet brand palette: blue, indigo and lavender from the supplied auth reference. */
+:root {
+  --konnet-blue: #3F68C5;
+  --konnet-purple: #536FC4;
+  --konnet-ink: #17233E;
+  --konnet-muted: #77839B;
+  --konnet-canvas: #F5F6FB;
+  --konnet-soft-blue: #E9EDFF;
+  --konnet-lavender: #E9E2FF;
+  --konnet-deep: #172B62;
+}
+.gradient-bg { background: linear-gradient(110deg, #315DB4 0%, #4D70C8 58%, #7A86D2 100%); }
+.gradient-text { background-image: linear-gradient(100deg, #315DB4, #6C79D0); }
+.konnet-reference-nav { background: linear-gradient(110deg, #315DB4 0%, #526FC5 55%, #8A8ED5 100%); }
+.konnet-profile-topbar { background: linear-gradient(155deg, #315DB4 0%, #172B62 100%); }
+.konnet-profile-hero { background: linear-gradient(155deg, #315DB4 0%, #243A78 72%, #172B62 100%); }
+.konnet-profile-tabs button.active::after { background: #456BC0; }
+
+.konnet-messages-page, .konnet-chat-page { background: #F7F8FC; color: #18233C; }
+.dark .konnet-messages-page, .dark .konnet-chat-page { background: #0D1425; color: #EEF2FF; }
+.konnet-messages-header {
+  padding: calc(18px + var(--safe-top)) 18px 16px;
+  background: #F7F8FC;
+  border-bottom: 1px solid #E9EDF5;
+}
+.dark .konnet-messages-header { background: #0D1425; border-color: #26334F; }
+.konnet-chat-search {
+  height: 44px; padding: 0 13px; border: 1px solid #E2E6EF;
+  border-radius: 999px; background: #fff; color: #9AA4B6;
+}
+.dark .konnet-chat-search { background: #17223A; border-color: #2A3856; }
+.konnet-chat-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: #1C2945; font-size: 14px; }
+.dark .konnet-chat-search input { color: #F5F7FF; }
+.konnet-chat-add {
+  width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center;
+  border-radius: 50%; background: #315DB4; color: #fff; box-shadow: 0 5px 14px #315db433;
+}
+.konnet-conversation-list { padding: 8px 18px 24px; background: #fff; }
+.dark .konnet-conversation-list { background: #111B30; }
+.konnet-conversation-row {
+  display: flex; width: 100%; align-items: center; gap: 13px; padding: 15px 2px;
+  border-bottom: 1px solid #EFF1F6; text-align: left;
+}
+.dark .konnet-conversation-row { border-color: #26334B; }
+.konnet-conversation-row:last-child { border-bottom: 0; }
+.konnet-chat-empty-icon { display:grid; place-items:center; width:64px; height:64px; border-radius:22px; background:#E9EDFF; color:#315DB4; font-size:28px; }
+.konnet-chat-header {
+  display:flex; align-items:center; gap:12px; padding:calc(12px + var(--safe-top)) 16px 12px;
+  min-height:76px; background:#fff; border-bottom:1px solid #E9EDF5;
+}
+.dark .konnet-chat-header { background:#111B30; border-color:#26334F; }
+.konnet-chat-back { width:38px; height:38px; display:grid; place-items:center; border-radius:50%; color:#263653; }
+.dark .konnet-chat-back { color:#E7ECFA; }
+.konnet-chat-profile-button { padding:9px 15px; border:1px solid #E1E6F0; border-radius:999px; color:#315DB4; font-size:12px; font-weight:700; }
+.konnet-chat-thread { background:#F7F8FC; }
+.dark .konnet-chat-thread { background:#0D1425; }
+.konnet-message-in { border-radius:18px 18px 18px 5px; background:#E9EDF6; color:#26334B; }
+.dark .konnet-message-in { background:#202D46; color:#F1F4FC; }
+.konnet-message-out { border-radius:18px 18px 5px 18px; background:linear-gradient(120deg,#315DB4,#536FC4); color:white; }
+.konnet-chat-composer {
+  position:fixed; left:0; z-index:40; width:100%; padding:12px 16px calc(12px + var(--safe-bottom));
+  background:rgba(255,255,255,.97); border-top:1px solid #E9EDF5; backdrop-filter:blur(18px);
+}
+.dark .konnet-chat-composer { background:rgba(17,27,48,.97); border-color:#26334F; }
+.konnet-chat-input-wrap { height:52px; border-radius:16px; background:#F0F2F7; padding:0 15px; }
+.dark .konnet-chat-input-wrap { background:#202D46; }
+.konnet-chat-input-wrap input { width:100%; min-width:0; border:0; outline:0; background:transparent; color:#1D2A45; font-size:14px; }
+.dark .konnet-chat-input-wrap input { color:#F5F7FF; }
+.konnet-chat-send { width:52px; height:52px; flex:0 0 52px; display:grid; place-items:center; border-radius:16px; background:#315DB4; color:white; box-shadow:0 5px 14px #315db433; }
+.konnet-chat-send:disabled { opacity:.45; }
+
+.konnet-auth-page { display:flex; flex-direction:column; background:#E9E2FF; color:#17233E; overflow-x:hidden; }
+.konnet-auth-art {
+  position:relative; display:flex; min-height:36vh; align-items:center; justify-content:center; overflow:hidden;
+  padding:calc(30px + var(--safe-top)) 24px 62px;
+  background:linear-gradient(135deg,#315DB4 0%,#6E82D3 56%,#172B62 100%);
+  border-radius:0 0 42px 42px;
+}
+.konnet-auth-art::before {
+  position:absolute; content:''; width:260px; height:320px; left:-110px; bottom:-150px;
+  border-radius:48% 52% 42% 58%; background:rgba(19,43,103,.42); transform:rotate(35deg);
+}
+.konnet-auth-art::after {
+  position:absolute; content:''; width:210px; height:240px; right:-82px; top:-92px;
+  border-radius:45% 55% 60% 40%; background:rgba(220,228,255,.36); transform:rotate(30deg);
+}
+.konnet-auth-orb { position:absolute; border-radius:50%; background:linear-gradient(145deg,#EAF0FF,#8EA8E9 65%,#526DBD); box-shadow:inset -9px -12px 20px #27488b55,0 10px 25px #142e7040; }
+.konnet-auth-orb.orb-one { width:86px;height:86px;left:-24px;top:14%;background:linear-gradient(145deg,#182b60,#3e65b7); }
+.konnet-auth-orb.orb-two { width:58px;height:58px;right:12%;top:20%; }
+.konnet-auth-orb.orb-three { width:104px;height:104px;left:12%;bottom:-32px;background:linear-gradient(145deg,#345db4,#142653); }
+.konnet-auth-orb.orb-four { width:34px;height:34px;right:19%;bottom:12%; }
+.konnet-auth-panel {
+  position:relative; z-index:2; flex:1; margin-top:-34px; padding:30px 24px calc(28px + var(--safe-bottom));
+  border-radius:34px 34px 0 0; background:#fff; box-shadow:0 -8px 30px #263c7510;
+}
+.konnet-auth-field { display:block; }
+.konnet-auth-field span { display:block; margin:0 0 6px 3px; color:#44516A; font-size:11px; font-weight:700; }
+.konnet-auth-field input {
+  width:100%; height:48px; padding:0 14px; border:1px solid #D9DFEA; border-radius:12px;
+  outline:0; background:#fff; color:#1B2945; font-size:14px;
+}
+.konnet-auth-field input:focus { border-color:#4770C5; box-shadow:0 0 0 3px #4770c51a; }
+.konnet-auth-submit { width:100%; height:49px; border-radius:12px; background:linear-gradient(110deg,#315DB4,#526FC5); color:white; font-size:14px; font-weight:700; box-shadow:0 7px 16px #315db42a; }
+.konnet-auth-submit:disabled,.konnet-google-button:disabled { opacity:.6; }
+.konnet-google-button { display:flex; width:100%; height:48px; align-items:center; justify-content:center; gap:10px; border:1px solid #DDE2EC; border-radius:12px; background:#fff; color:#263653; font-size:13px; font-weight:600; }
+@media (min-width:700px) {
+  .konnet-auth-page { min-height:100dvh; align-items:center; justify-content:center; padding:40px; }
+  .konnet-auth-art { width:min(100%,480px); min-height:230px; border-radius:30px 30px 0 0; }
+  .konnet-auth-panel { width:min(100%,480px); flex:0 0 auto; margin-top:-26px; border-radius:30px; }
+}
+@media (max-height:700px) and (max-width:699px) {
+  .konnet-auth-art { min-height:28vh; }
+  .konnet-auth-panel { padding-top:24px; }
+}
