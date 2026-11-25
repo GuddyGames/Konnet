@@ -1,51 +1,29 @@
 import { useState, useEffect } from 'react';
 import { getUnreadNotifCount } from '../../utils/firestoreNotifications';
-import { getUnreadConversationCount } from '../../utils/firestoreMessages';
 import { useUser } from '../../context/UserContext';
 import GuddyAiChat from '../common/GuddyAiChat';
-
-function IconButton({ label, onClick, children, count }) {
-  return (
-    <button type="button" onClick={onClick} aria-label={label} className="konnet-icon-button relative">
-      {children}
-      {count > 0 && <span className="absolute -right-1 -top-1 flex h-[17px] min-w-[17px] items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1 text-[9px] font-bold text-white dark:border-slate-950">{count > 9 ? '9+' : count}</span>}
-    </button>
-  );
-}
 
 export default function TopNav({ navigate }) {
   const { currentUser } = useUser();
   const [aiOpen, setAiOpen] = useState(false);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
-  const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
     if (!currentUser) return;
     getUnreadNotifCount(currentUser.id).then(setUnreadNotifs).catch(() => setUnreadNotifs(0));
-    getUnreadConversationCount(currentUser.id).then(setUnreadMessages).catch(() => setUnreadMessages(0));
   }, [currentUser]);
 
   return (
     <>
-      <header className="konnet-top-nav sticky top-0 z-40 flex items-center justify-between border-b pb-3 backdrop-blur-2xl">
-        <div className="flex min-w-0 items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-gradient-to-br from-blue-600 to-violet-600 text-lg font-black text-white shadow-md shadow-blue-600/20">K</div>
-          <div className="min-w-0">
-            <h1 className="font-poppins text-[21px] font-extrabold leading-6 tracking-tight text-slate-900 dark:text-white">Konnet</h1>
-            <p className="text-[10px] font-medium tracking-wide text-slate-400">YOUR WORLD, CONNECTED</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <IconButton label="Notifications" onClick={() => navigate('notifications')} count={unreadNotifs}>
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M10 21h4"/></svg>
-          </IconButton>
-          <IconButton label="Messages" onClick={() => navigate('messages')} count={unreadMessages}>
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2V11.5A7.5 7.5 0 0 1 10.5 4H12a8 8 0 0 1 8 7.5z"/></svg>
-          </IconButton>
-          <button type="button" onClick={() => setAiOpen(true)} className="flex h-10 items-center gap-1.5 rounded-[14px] bg-gradient-to-br from-blue-600 to-violet-600 px-3 text-xs font-bold text-white shadow-md shadow-blue-600/20" aria-label="Open Guddy AI">
-            <span className="text-sm">✦</span><span>AI</span>
-          </button>
-        </div>
+      <header className="konnet-home-header sticky top-0 z-40 flex items-center justify-between px-4">
+        <button type="button" onClick={() => navigate('new-story')} aria-label="Create a story" className="konnet-header-action">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h2l1.3-2h4.4l1.3 2h2A2.5 2.5 0 0 1 20 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.2"/></svg>
+        </button>
+        <h1 className="font-poppins text-[21px] font-bold tracking-tight text-slate-900 dark:text-white">Explore</h1>
+        <button type="button" onClick={() => navigate('notifications')} aria-label="Notifications" className="konnet-header-action relative">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9ZM10 21h4a2 2 0 0 1-4 0Z"/></svg>
+          {unreadNotifs > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-rose-500 dark:border-slate-900" />}
+        </button>
       </header>
       {aiOpen && <GuddyAiChat onClose={() => setAiOpen(false)} />}
     </>
