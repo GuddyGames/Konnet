@@ -1,5 +1,5 @@
 import { useUser} from '../../context/UserContext';
-import { findOrCreateConversation } from '../../utils/firestoreMessages';
+import { findOrCreateConversation } from '../../utils/supabaseMessages';
 import Avatar from '../common/Avatar';
 import Settings from '../../pages/Settings';
 import PresenceDot from '../common/PresenceDot';
