@@ -53,6 +53,7 @@ const loadKonnetUser = async (userId) => {
 
 export const UserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [profileSetupRequired, setProfileSetupRequired] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('konnet_darkmode') === 'true');
 
@@ -61,16 +62,20 @@ export const UserProvider = ({ children }) => {
 
     const applySession = async (session) => {
       if (!session?.user) {
-        if (active) setCurrentUser(null);
+        if (active) { setCurrentUser(null); setProfileSetupRequired(false); }
         return;
       }
 
       try {
         const user = await loadKonnetUser(session.user.id);
-        if (active) setCurrentUser(user);
+        if (active) {
+          const needsUsername = !user || user.username?.startsWith('user_');
+          setProfileSetupRequired(needsUsername);
+          setCurrentUser(needsUsername ? null : user);
+        }
       } catch (error) {
         console.error('Could not load Konnet profile:', error);
-        if (active) setCurrentUser(null);
+        if (active) { setCurrentUser(null); setProfileSetupRequired(true); }
       }
     };
 
@@ -160,6 +165,24 @@ export const UserProvider = ({ children }) => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     setCurrentUser(null);
+    setProfileSetupRequired(false);
+  };
+
+  const completeProfile = async (username) => {
+    const normalizedUsername = username.trim().toLowerCase();
+    if (!/^[a-z0-9_]{3,20}$/.test(normalizedUsername)) return { error: 'Username must be 3–20 characters and contain only letters, numbers or underscores.' };
+    const { error } = await supabase.rpc('complete_my_profile', { input_username: normalizedUsername });
+    if (error) return { error: error.message };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const profile = await loadKonnetUser(user.id);
+      if (!profile) return { error: 'Profile saved, but could not be loaded. Please refresh.' };
+      setCurrentUser(profile);
+      setProfileSetupRequired(false);
+      return { success: true };
+    } catch (error) {
+      return { error: error.message || 'Could not load your profile.' };
+    }
   };
 
   const updateProfile = async (updates) => {
@@ -227,8 +250,8 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider value={{
-      currentUser, darkMode, authLoading,
-      signup, login, loginWithGoogle, logout, updateProfile, toggleFollow,
+      currentUser, darkMode, authLoading, profileSetupRequired,
+      signup, login, loginWithGoogle, logout, completeProfile, updateProfile, toggleFollow,
       getUserById, getUserByUsername, toggleDarkMode,
     }}>
       {children}
