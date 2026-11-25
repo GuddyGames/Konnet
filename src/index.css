@@ -7,7 +7,14 @@
 :root {
   color-scheme: light;
   --konnet-blue: #2563EB;
-  --konnet-purple: #7C3AED;
+  --konnet-purple: #7257E8;
+  --konnet-ink: #172033;
+  --konnet-muted: #7B8497;
+  --konnet-canvas: #F5F7FB;
+  --konnet-surface: #FFFFFF;
+  --konnet-line: #E9EDF4;
+  --konnet-soft-blue: #EEF3FF;
+  --konnet-radius-card: 22px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -17,7 +24,7 @@
 
 html {
   min-height: 100%;
-  background: #FAFAFA;
+  background: var(--konnet-canvas);
   overscroll-behavior-y: none;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
@@ -29,7 +36,8 @@ body {
   min-height: 100dvh;
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: #FAFAFA;
+  color: var(--konnet-ink);
+  background: var(--konnet-canvas);
   overscroll-behavior-y: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
@@ -80,7 +88,7 @@ body {
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
   overflow-x: clip;
-  background: #fff;
+  background: var(--konnet-surface);
   isolation: isolate;
   -webkit-overflow-scrolling: touch;
 }
@@ -90,7 +98,58 @@ body {
 }
 
 .dark .app-shell {
-  background: #0f172a;
+  background: #0B1020;
+}
+
+.dark body,
+.dark html {
+  background: #0B1020;
+}
+
+.konnet-icon-button {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--konnet-line);
+  border-radius: 15px;
+  background: var(--konnet-surface);
+  color: var(--konnet-ink);
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.dark .konnet-icon-button {
+  background: #151D31;
+  border-color: #263149;
+  color: #E7ECF7;
+}
+
+.konnet-icon-button:active { transform: scale(.94); }
+
+.konnet-section-title {
+  color: var(--konnet-ink);
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.dark .konnet-section-title { color: #F8FAFC; }
+
+.konnet-muted { color: var(--konnet-muted); }
+.dark .konnet-muted { color: #98A4B8; }
+
+.konnet-card {
+  border: 1px solid var(--konnet-line);
+  border-radius: var(--konnet-radius-card);
+  background: var(--konnet-surface);
+  box-shadow: 0 8px 28px rgba(24, 39, 75, .045);
+}
+.dark .konnet-card {
+  border-color: #263149;
+  background: #111A2D;
+  box-shadow: none;
 }
 
 .app-page-with-nav {
