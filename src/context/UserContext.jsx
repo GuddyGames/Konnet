@@ -69,7 +69,10 @@ export const UserProvider = ({ children }) => {
       try {
         const user = await loadKonnetUser(session.user.id);
         if (active) {
-          const needsUsername = !user || user.username?.startsWith('pending_');
+          const isGoogleAccount = session.user.app_metadata?.providers?.includes('google');
+          const hasChosenUsername = Boolean(session.user.user_metadata?.username);
+          const needsUsername = !user || user.username?.startsWith('pending_') ||
+            (isGoogleAccount && !hasChosenUsername);
           setProfileSetupRequired(needsUsername);
           setCurrentUser(needsUsername ? null : user);
         }
@@ -174,6 +177,10 @@ export const UserProvider = ({ children }) => {
     const { error } = await supabase.rpc('complete_my_profile', { input_username: normalizedUsername });
     if (error) return { error: error.message };
     try {
+      const { error: metadataError } = await supabase.auth.updateUser({
+        data: { username: normalizedUsername },
+      });
+      if (metadataError) throw metadataError;
       const { data: { user } } = await supabase.auth.getUser();
       const profile = await loadKonnetUser(user.id);
       if (!profile) return { error: 'Profile saved, but could not be loaded. Please refresh.' };
