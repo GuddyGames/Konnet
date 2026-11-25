@@ -5,6 +5,7 @@ import { useUser } from './context/UserContext';
 
 // Pages
 import Login from './pages/Login';
+import UsernameOnboarding from './pages/UsernameOnboarding';
 import Home from './pages/Home';
 import Explore from './pages/Explore';
 import Profile from './pages/Profile';
@@ -23,7 +24,7 @@ import './styles/animations.css';
 
 
 export default function App() {
-  const { currentUser, darkMode, authLoading } = useUser();
+  const { currentUser, darkMode, authLoading, profileSetupRequired } = useUser();
   const [page, setPage] = useState({ name: 'home', params: {} });
   const [history, setHistory] = useState([]);
 
@@ -71,6 +72,7 @@ export default function App() {
     );
   }
 
+  if (profileSetupRequired) return <UsernameOnboarding />;
   if (!currentUser) return <Login />;
 
   const { name, params } = page;
