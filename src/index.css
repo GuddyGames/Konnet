@@ -94,15 +94,16 @@ body {
   min-height: calc(4rem + var(--safe-bottom));
 }
 
+/* The installed app uses the full device width on phones and tablets. */
 @media (min-width: 600px) {
   .app-shell {
-    max-width: 480px;
+    max-width: none;
   }
 
   .app-bottom-nav {
-    left: 50%;
-    width: min(100%, 480px);
-    transform: translateX(-50%);
+    left: 0;
+    width: 100%;
+    transform: none;
   }
 }
 
