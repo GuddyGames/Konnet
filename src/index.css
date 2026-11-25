@@ -34,8 +34,11 @@ body {
 }
 
 #root {
+  width: 100%;
+  max-width: none !important;
   min-height: 100vh;
   min-height: 100dvh;
+  margin: 0;
 }
 
 @layer base {
@@ -62,10 +65,12 @@ body {
 
 .app-shell {
   position: relative;
-  width: 100%;
+  display: block;
+  width: 100% !important;
+  max-width: none !important;
   min-height: 100vh;
   min-height: 100dvh;
-  margin-inline: auto;
+  margin: 0;
   padding-top: var(--safe-top);
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
@@ -94,17 +99,12 @@ body {
   min-height: calc(4rem + var(--safe-bottom));
 }
 
-/* The installed app uses the full device width on phones and tablets. */
-@media (min-width: 600px) {
-  .app-shell {
-    max-width: none;
-  }
-
-  .app-bottom-nav {
-    left: 0;
-    width: 100%;
-    transform: none;
-  }
+/* Konnet is a phone-first installed app, not a centered desktop web layout. */
+.app-bottom-nav {
+  left: 0;
+  width: 100%;
+  max-width: none;
+  transform: none;
 }
 
 @media (orientation: landscape) and (max-height: 500px) {
