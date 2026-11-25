@@ -33,8 +33,8 @@ export default function NewPost({ navigate, goBack }) {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full px-4 pt-[env(safe-area-inset-top)] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
-      <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between">
+    <div className="min-h-[100dvh] w-full bg-[#F7F8FC] px-4 pt-[env(safe-area-inset-top)] pb-[calc(1.5rem+env(safe-area-inset-bottom))] dark:bg-[#0B1020]">
+      <div className="sticky top-0 z-30 -mx-4 mb-5 flex items-center justify-between border-b border-slate-100 bg-white/95 px-4 py-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95">
         <h2 className="font-bold font-poppins text-gray-900 dark:text-white">New Post</h2>
         <button onClick={goBack} className="text-gray-600 dark:text-gray-400 font-semibold">Cancel</button>
       </div>
@@ -46,14 +46,14 @@ export default function NewPost({ navigate, goBack }) {
         value={caption}
         onChange={e => setCaption(e.target.value)}
         placeholder="Write a caption..."
-        className="w-full bg-gray-800 p-2 rounded-lg focus:outline-none"
+        className="mt-4 w-full rounded-2xl border border-slate-200 bg-white p-4 text-base text-slate-900 shadow-sm outline-none placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
         rows="3"
       />
 
       <button
         onClick={handleShare}
         disabled={loading}
-        className="w-full bg-blue-500 py-2 rounded-lg mt-4 font-semibold disabled:opacity-50"
+        className="mt-4 w-full rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 py-3.5 font-semibold text-white shadow-lg shadow-blue-600/20 disabled:opacity-50"
       >
         {loading ? '...' : 'Share Post'}
       </button>
