@@ -1,0 +1,21 @@
+{
+  "id": "/",
+  "name": "Konnet",
+  "short_name": "Konnet",
+  "description": "Connect with your people, share moments and build your community.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#2563EB",
+  "icons": [
+    {
+      "src": "/icons/konnet-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
