@@ -29,7 +29,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-8 bg-white dark:bg-slate-900">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center px-6 pt-[calc(2rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))] bg-white dark:bg-slate-900">
       {/* Logo */}
       <div className="mb-8 text-center">
         <h1 className="text-4xl font-black font-poppins gradient-text mb-2">Konnet</h1>
