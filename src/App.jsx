@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { startPresenceHeartbeat } from './utils/firestorePresence';
 import { useUser } from './context/UserContext';
 
-
-// Pages
 import Login from './pages/Login';
 import UsernameOnboarding from './pages/UsernameOnboarding';
 import Home from './pages/Home';
@@ -23,51 +21,62 @@ import NotificationToast from './components/common/NotificationToast';
 import PWAInstallPrompt from './components/common/PWAInstallPrompt';
 import './styles/animations.css';
 
-
 export default function App() {
   const { currentUser, darkMode, authLoading, profileSetupRequired } = useUser();
   const [page, setPage] = useState({ name: 'home', params: {} });
   const [history, setHistory] = useState([]);
 
-
-
-  // Apply dark mode class
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
   }, [darkMode]);
 
-  // Navigate to a new page, remembering where we came from
-  // Usage: navigate('home') | navigate('profile/username') | navigate('post/postId')
+  // Keep the app's screen history in the browser history so Android and
+  // iOS back gestures/buttons return to the previous Konnet screen.
+  useEffect(() => {
+    if (!window.history.state?.konnetPage) {
+      window.history.replaceState({ konnetPage: page }, '', window.location.href);
+    }
+
+    const handlePopState = (event) => {
+      const previousPage = event.state?.konnetPage;
+      if (previousPage) {
+        setPage(previousPage);
+        setHistory((items) => items.slice(0, -1));
+      } else {
+        setPage({ name: 'home', params: {} });
+        setHistory([]);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const navigate = (path) => {
-    setHistory(h => [...h, page]);
     const [name, ...rest] = path.split('/');
-    setPage({ name, params: { id: rest.join('/') } });
-    window.scrollTo(0, 0);
+    const nextPage = { name, params: { id: rest.join('/') } };
+    setHistory((items) => [...items, page]);
+    window.history.pushState({ konnetPage: nextPage }, '', window.location.href);
+    setPage(nextPage);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
-  // Go back to the previous page in history
   const goBack = () => {
-    setHistory(h => {
-      if (h.length === 0) {
-        setPage({ name: 'home', params: {} });
-        return h;
-      }
-      setPage(h[h.length - 1]);
-      return h.slice(0, -1);
-    });
-    window.scrollTo(0, 0);
+    if (history.length > 0) {
+      window.history.back();
+      return;
+    }
+    setPage({ name: 'home', params: {} });
   };
 
   useEffect(() => {
     if (!currentUser) return;
     return startPresenceHeartbeat(currentUser.id);
   }, [currentUser]);
-  
-  // IMPORTANT: all hooks above this line, all conditional returns below.
-  // Firebase needs a moment on first load to check if a session already exists.
+
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-900">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-white dark:bg-slate-900">
         <Loader isLoading={true} />
       </div>
     );
@@ -78,25 +87,24 @@ export default function App() {
 
   const { name, params } = page;
 
-
   return (
     <>
       <NotificationToast />
       <PWAInstallPrompt />
-    <div className="w-full max-w-sm mx-auto min-h-[100dvh] relative bg-white dark:bg-slate-900 animate-fadeSlideIn" key={name}>
-      {name === 'home' && <Home navigate={navigate} />}
-      {name === 'explore' && <Explore navigate={navigate} />}
-      {name === 'new-post' && <NewPost navigate={navigate} goBack={goBack} />}
-      {name === 'reels' && <Reels navigate={navigate} />}
-      {name === 'profile' && <Profile username={params.id} navigate={navigate} />}
-      {name === 'edit-profile' && <EditProfile navigate={navigate} goBack={goBack} />}
-      {name === 'messages' && <Messages navigate={navigate} />}
-      {name === 'chat' && <Chat conversationId={params.id} navigate={navigate} />}
-      {name === 'notifications' && <Notifications navigate={navigate} />}
-      {name === 'post' && <PostDetail postId={params.id} navigate={navigate} />}
-      {name === 'new-story' && <NewStory navigate={navigate} goBack={goBack} />}
-      {name === 'settings' && <Settings navigate={navigate} goBack={goBack} />}
-      </div>
-      </>
+      <main className="app-shell animate-fadeSlideIn" key={name}>
+        {name === 'home' && <Home navigate={navigate} />}
+        {name === 'explore' && <Explore navigate={navigate} />}
+        {name === 'new-post' && <NewPost navigate={navigate} goBack={goBack} />}
+        {name === 'reels' && <Reels navigate={navigate} />}
+        {name === 'profile' && <Profile username={params.id} navigate={navigate} />}
+        {name === 'edit-profile' && <EditProfile navigate={navigate} goBack={goBack} />}
+        {name === 'messages' && <Messages navigate={navigate} />}
+        {name === 'chat' && <Chat conversationId={params.id} navigate={navigate} />}
+        {name === 'notifications' && <Notifications navigate={navigate} />}
+        {name === 'post' && <PostDetail postId={params.id} navigate={navigate} />}
+        {name === 'new-story' && <NewStory navigate={navigate} goBack={goBack} />}
+        {name === 'settings' && <Settings navigate={navigate} goBack={goBack} />}
+      </main>
+    </>
   );
 }
