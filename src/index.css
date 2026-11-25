@@ -248,3 +248,78 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 2px;
   border-radius: 50%;
 }
+
+
+/* Home feed visual language from the supplied Konnet reference. */
+.konnet-home { background: #fff; }
+.dark .konnet-home { background: #0B1020; }
+.konnet-home-header {
+  height: 88px;
+  padding-top: var(--safe-top);
+  background: #fff;
+}
+.dark .konnet-home-header { background: #0B1020; }
+.konnet-home-header h1 { margin: 0; }
+.konnet-header-action {
+  display: flex;
+  width: 58px;
+  height: 58px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: #EEF2FB;
+  color: #20283A;
+}
+.dark .konnet-header-action { background: #1A2540; color: #E8EDFA; }
+.konnet-stories { border: 0; padding-top: 10px; padding-bottom: 18px; }
+.konnet-stories > div { gap: 12px; }
+.konnet-feed { max-width: 620px; }
+.konnet-post-card {
+  overflow: hidden;
+  margin: 0 0 22px;
+  border-radius: 34px;
+  background: #E9EFFD;
+  padding: 12px;
+}
+.dark .konnet-post-card { background: #17223B; }
+.konnet-post-author { display: flex; align-items: center; gap: 12px; padding: 2px 4px 12px; }
+.konnet-post-author img { border-radius: 50%; }
+.konnet-post-media { border-radius: 30px; background: #DCE6F7; }
+.konnet-post-overlay {
+  min-height: 58px;
+  background: linear-gradient(180deg, transparent 0%, rgba(12, 21, 39, .62) 100%);
+}
+.konnet-post-overlay button { display: inline-flex; min-width: 30px; min-height: 36px; align-items: center; justify-content: center; gap: 6px; }
+.konnet-reference-nav {
+  min-height: calc(86px + var(--safe-bottom));
+  padding: 8px max(1rem, var(--safe-right)) calc(12px + var(--safe-bottom)) max(1rem, var(--safe-left));
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(110deg, #7D91C9 0%, #9A8AD2 55%, #777FC4 100%);
+  box-shadow: 0 -8px 24px rgba(58, 71, 125, .12);
+}
+.konnet-reference-nav-item { height: 58px; color: #fff; }
+.konnet-reference-nav-icon { display: flex; width: 42px; height: 42px; align-items: center; justify-content: center; }
+.konnet-reference-nav-icon svg { width: 25px; height: 25px; }
+.konnet-reference-create {
+  display: flex;
+  width: 78px;
+  height: 78px;
+  align-items: center;
+  justify-content: center;
+  margin-top: -35px;
+  border: 5px solid #F7D9D8;
+  border-radius: 50%;
+  background: #F9E2E1;
+  color: #14956F;
+  box-shadow: 0 5px 14px rgba(47, 54, 91, .18);
+}
+.konnet-reference-create svg { width: 34px; height: 34px; }
+@media (max-width: 380px) {
+  .konnet-home-header { height: 78px; }
+  .konnet-header-action { width: 50px; height: 50px; }
+  .konnet-post-card { border-radius: 28px; padding: 10px; }
+  .konnet-post-media { border-radius: 24px; }
+  .konnet-reference-create { width: 68px; height: 68px; margin-top: -29px; }
+}
