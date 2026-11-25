@@ -17,7 +17,7 @@ export default function UsernameOnboarding() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 bg-white dark:bg-slate-900">
+    <main className="min-h-[100dvh] flex items-center justify-center px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-white dark:bg-slate-900">
       <form onSubmit={submit} className="w-full max-w-sm space-y-4">
         <div className="text-center">
           <h1 className="text-3xl font-black font-poppins gradient-text">Welcome to Konnet</h1>
