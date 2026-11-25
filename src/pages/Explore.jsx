@@ -60,10 +60,10 @@ export default function Explore({ navigate }) {
   }, [term, currentUser?.id]);
 
   return (
-    <div className="app-page-with-nav min-h-[100dvh] bg-white dark:bg-slate-900">
-      <div className="sticky top-0 z-30 border-b border-gray-200 bg-white px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-3 dark:border-slate-700 dark:bg-slate-900">
-        <h1 className="mb-3 text-xl font-bold text-gray-900 dark:text-white font-poppins">Discover people</h1>
-        <div className="flex items-center gap-2 rounded-2xl bg-gray-100 px-4 dark:bg-slate-800">
+    <div className="app-page-with-nav min-h-[100dvh] bg-[#F5F7FB] dark:bg-[#0B1020]">
+      <div className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95">
+        <h1 className="mb-4 font-poppins text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Discover people</h1>
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
             <circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>
           </svg>
@@ -78,7 +78,7 @@ export default function Explore({ navigate }) {
         </div>
       </div>
 
-      <section className="px-4 py-4">
+      <section className="px-4 py-5">
         <h2 className="mb-3 text-sm font-semibold text-gray-500 dark:text-gray-400">
           {term ? 'Search results' : 'People on Konnet'}
         </h2>
@@ -95,20 +95,20 @@ export default function Explore({ navigate }) {
             <p className="mt-1 text-sm text-gray-400">Try another username or invite someone to join Konnet.</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-slate-800">
+          <div className="overflow-hidden rounded-[22px] border border-slate-100 bg-white px-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             {results.map((user) => (
               <button
                 key={user.id}
                 type="button"
                 onClick={() => navigate('profile/' + user.username)}
-                className="flex w-full items-center gap-3 py-3 text-left active:bg-gray-50 dark:active:bg-slate-800"
+                className="flex w-full items-center gap-3 rounded-xl py-3 text-left active:bg-slate-50 dark:active:bg-slate-800"
               >
                 <Avatar user={user} size={48} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-gray-900 dark:text-white">{user.username}</span>
                   <span className="block truncate text-sm text-gray-500 dark:text-gray-400">{user.name}</span>
                 </span>
-                <span className="rounded-full border border-gray-200 px-4 py-1.5 text-xs font-semibold text-gray-700 dark:border-slate-600 dark:text-gray-200">View</span>
+                <span className="rounded-full bg-blue-50 px-4 py-2 text-xs font-bold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">View</span>
               </button>
             ))}
           </div>
