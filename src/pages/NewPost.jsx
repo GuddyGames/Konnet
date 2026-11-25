@@ -33,7 +33,7 @@ export default function NewPost({ navigate, goBack }) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
+    <div className="min-h-[100dvh] w-full px-4 pt-[env(safe-area-inset-top)] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
       <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between">
         <h2 className="font-bold font-poppins text-gray-900 dark:text-white">New Post</h2>
         <button onClick={goBack} className="text-gray-600 dark:text-gray-400 font-semibold">Cancel</button>
