@@ -83,7 +83,7 @@ export default function App() {
     <>
       <NotificationToast />
       <PWAInstallPrompt />
-    <div className="max-w-sm mx-auto min-h-screen relative bg-white dark:bg-slate-900 animate-fadeSlideIn" key={name}>
+    <div className="w-full max-w-sm mx-auto min-h-[100dvh] relative bg-white dark:bg-slate-900 animate-fadeSlideIn" key={name}>
       {name === 'home' && <Home navigate={navigate} />}
       {name === 'explore' && <Explore navigate={navigate} />}
       {name === 'new-post' && <NewPost navigate={navigate} goBack={goBack} />}
