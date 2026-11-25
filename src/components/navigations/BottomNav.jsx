@@ -22,7 +22,7 @@ export default function BottomNav({ activePage, navigate }) {
   const { currentUser } = useUser();
 
   return (
-    <nav aria-label="Main navigation" className="app-bottom-nav konnet-bottom-nav fixed bottom-0 left-0 z-40 grid w-full grid-cols-5 items-center border-t border-gray-100 bg-white/95 px-2 pt-2 backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-950/95">
+    <nav aria-label="Main navigation" className="app-bottom-nav fixed bottom-0 z-40 grid grid-cols-5 items-center border-t backdrop-blur-2xl">
       {NAV.map(({ id, label, icon }) => {
         const isActive = activePage === id;
         const isCreate = id === 'new-post';
@@ -33,13 +33,15 @@ export default function BottomNav({ activePage, navigate }) {
             aria-label={label}
             aria-current={isActive ? 'page' : undefined}
             onClick={() => navigate(id === 'profile' ? `profile/${currentUser?.username}` : id)}
-            className={`relative flex min-h-12 flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-semibold transition-colors ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}
+            className={`konnet-nav-item relative flex flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-semibold transition-colors ${isActive ? '' : ''}`}
           >
-            <span className={`flex h-8 w-10 items-center justify-center rounded-2xl ${isCreate ? 'h-10 w-10 -mt-4 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 text-white shadow-lg shadow-blue-600/25' : isActive ? 'bg-blue-50 dark:bg-blue-500/15' : ''}`}>
-              <span className={isCreate ? 'h-6 w-6' : 'h-[21px] w-[21px]'}>{icon(isActive)}</span>
-            </span>
+            {isCreate ? (
+              <span className="konnet-nav-create">{icon(false)}</span>
+            ) : (
+              <span className="konnet-nav-icon">{icon(isActive)}</span>
+            )}
             <span>{label}</span>
-            {isActive && !isCreate && <span className="absolute bottom-0 h-1 w-1 rounded-full bg-blue-600 dark:bg-blue-400" />}
+            {isActive && !isCreate && <span className="absolute bottom-0 h-1 w-1 rounded-full bg-current" />}
           </button>
         );
       })}
