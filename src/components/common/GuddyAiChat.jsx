@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 
 export default function GuddyAiChat({ onClose }) {
   const [messages, setMessages] = useState([
-    { role: 'assistant', text: "Hey! I'm GuddyAi ✦ — your smart assistant on Konnet. Ask me anything or let me help write a caption!" }
+    { role: 'assistant', text: "Hey! I'm G^_^E Ai — your AI assistant on Konnet. Ask me anything, get help around the app, or create something together!" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ export default function GuddyAiChat({ onClose }) {
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm" style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}>✦</div>
           <div>
-            <p className="text-white font-bold text-sm font-poppins">GuddyAi</p>
+            <p className="text-white font-bold text-sm font-poppins">G^_^E Ai</p>
             <p className="text-xs" style={{ color: '#F59E0B' }}>Your AI on Konnet</p>
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function GuddyAiChat({ onClose }) {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && send()}
-          placeholder="Ask GuddyAi..."
+          placeholder="Ask G^_^E Ai..."
           className="flex-1 bg-gray-100 dark:bg-slate-700 rounded-xl px-3 py-2 text-sm outline-none text-gray-800 dark:text-white placeholder-gray-400"
         />
         <button onClick={send} className="w-9 h-9 rounded-xl flex items-center justify-center text-white flex-shrink-0" style={{ background: 'linear-gradient(135deg, #2563EB, #7C3AED)' }}>
