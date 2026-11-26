@@ -17,8 +17,7 @@ export default function TopNav({ navigate }) {
     <>
       <header className="konnet-home-header sticky top-0 z-40 flex items-center justify-between px-4">
         <button type="button" onClick={() => setAiOpen(true)} aria-label="Open G^_^E Ai" className="konnet-header-action flex items-center gap-1.5 !w-auto px-2">
-          <span className="font-poppins text-sm font-extrabold tracking-tight text-[#315DB4] dark:text-[#C6D2FF]">G^_^E</span>
-          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">Ai</span>
+          <span className="font-poppins text-sm font-extrabold tracking-tight text-[#315DB4] dark:text-[#C6D2FF]">Ai</span>
         </button>
         <h1 className="font-poppins text-[21px] font-bold tracking-tight text-slate-900 dark:text-white">Explore</h1>
         <button type="button" onClick={() => navigate('explore')} aria-label="Search Konnet" className="konnet-header-action relative">
