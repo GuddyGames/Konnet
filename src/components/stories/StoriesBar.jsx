@@ -25,9 +25,7 @@ export default function StoriesBar({ navigate }) {
       setAuthors(Object.fromEntries(entries.filter(([, user]) => user)));
     } catch (error) {
       console.error('Failed to load stories:', error);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   useEffect(() => { if (currentUser) load(); }, [currentUser]);
@@ -40,12 +38,11 @@ export default function StoriesBar({ navigate }) {
     <>
       <section aria-label="Stories" className="konnet-stories bg-white py-3 dark:bg-slate-950">
         <div className="flex gap-3 overflow-x-auto px-4 scrollbar-hide">
-          <button type="button" className="flex w-[76px] shrink-0 flex-col items-center gap-1" onClick={() => myStories.length ? setActiveStory({ author: currentUser, stories: myStories }) : navigate('new-story')}>
-            <span className="relative rounded-full border-[2.5px] border-[#63CDB2] p-[3px]">
-              <Avatar user={currentUser} size={68} />
-              {!myStories.length && <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/15 text-3xl font-light text-white">+</span>}
+          <button type="button" aria-label={myStories.length ? 'View your story' : 'Add your first story'} className="flex w-[76px] shrink-0 flex-col items-center gap-1" onClick={() => myStories.length ? setActiveStory({ author: currentUser, stories: myStories }) : navigate('new-story')}>
+            <span className={`relative grid h-[76px] w-[76px] place-items-center rounded-full p-[3px] ${myStories.length ? 'border-[2.5px] border-[#63CDB2]' : 'border-2 border-dashed border-[#63CDB2]'}`}>
+              {myStories.length ? <Avatar user={currentUser} size={68} /> : <span className="text-4xl font-light leading-none text-[#315DB4] dark:text-[#C6D2FF]">+</span>}
             </span>
-            <span className="max-w-full truncate text-[13px] font-semibold text-slate-900 dark:text-white">You</span>
+            <span className="max-w-full truncate text-[13px] font-semibold text-slate-900 dark:text-white">{myStories.length ? (currentUser.username || 'You') : 'Add story'}</span>
           </button>
           {otherIds.map(id => {
             const author = authors[id];
