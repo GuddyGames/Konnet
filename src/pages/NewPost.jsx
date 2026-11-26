@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 const mediaOptions = [
   { key: 'photo', icon: '▧', title: 'Post', subtitle: 'Photos for your feed', description: 'Share a moment with your followers.' },
-  { key: 'story', icon: '◉', title: 'Story', subtitle: 'Moments that last 24 hours', description: 'Share an everyday moment that disappears after 24 hours.' },
   { key: 'reel', icon: '▶', title: 'Reel', subtitle: 'Short vertical videos', description: 'Create short videos people can discover and enjoy.' },
   { key: 'video', icon: '▣', title: 'Video', subtitle: 'Share a video post', description: 'Post a video with a caption for your followers.' },
 ];
