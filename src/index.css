@@ -380,9 +380,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   content: '';
   transform: translateX(-50%);
 }
-.konnet-profile-page .grid.grid-cols-3 { gap: 5px; padding: 0 8px; background: #fff; }
-.dark .konnet-profile-page .grid.grid-cols-3 { background: #0B1020; }
-.konnet-profile-page .grid.grid-cols-3 > div { border-radius: 7px; }
 @media (max-width: 380px) {
   .konnet-profile-hero { padding-right: 16px; padding-left: 16px; border-bottom-right-radius: 64px; }
   .konnet-profile-avatar img { width: 94px; height: 94px; }
