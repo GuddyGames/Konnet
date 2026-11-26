@@ -13,6 +13,8 @@ const mapProfile = (profile) => ({
   avatarColor: getAvatarColor(profile.username || 'konnet'),
 });
 
+const discoveryTopics = ['People', 'Creators', 'Photography', 'Technology'];
+
 export default function Explore({ navigate }) {
   const { currentUser } = useUser();
   const [term, setTerm] = useState('');
@@ -24,18 +26,13 @@ export default function Explore({ navigate }) {
     setLoading(true);
     setError('');
     try {
-      let query = supabase
-        .from('profiles')
+      let query = supabase.from('profiles')
         .select('id, username, display_name, avatar_url')
         .neq('id', currentUser.id)
         .order('created_at', { ascending: false })
         .limit(40);
-
       const cleanTerm = searchTerm.trim().replace(/[,%()]/g, '');
-      if (cleanTerm) {
-        query = query.ilike('username', '%' + cleanTerm + '%');
-      }
-
+      if (cleanTerm) query = query.ilike('username', '%' + cleanTerm + '%');
       const { data, error: queryError } = await query;
       if (queryError) throw queryError;
       setResults((data || []).map(mapProfile));
@@ -43,9 +40,7 @@ export default function Explore({ navigate }) {
       console.error('Could not discover Konnet accounts:', err);
       setError('We couldn’t find accounts right now. Please try again.');
       setResults([]);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   useEffect(() => {
@@ -60,61 +55,30 @@ export default function Explore({ navigate }) {
   }, [term, currentUser?.id]);
 
   return (
-    <div className="app-page-with-nav min-h-[100dvh] bg-[#F5F7FB] dark:bg-[#0B1020]">
-      <div className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95">
-        <h1 className="mb-4 font-poppins text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Discover people</h1>
-        <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
-            <circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>
-          </svg>
-          <input
-            value={term}
-            onChange={(event) => setTerm(event.target.value)}
-            placeholder="Search by username..."
-            aria-label="Search accounts by username"
-            className="min-w-0 flex-1 bg-transparent py-3 text-base text-gray-900 outline-none dark:text-white"
-          />
-          {term && <button type="button" onClick={() => setTerm('')} className="p-2 text-sm text-blue-600">Clear</button>}
+    <div className="app-page-with-nav min-h-[100dvh] bg-[#F5F6FB] dark:bg-[#0B1020]">
+      <div className="sticky top-0 z-30 border-b border-[#E8ECF5] bg-white/95 px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-4 backdrop-blur-xl dark:border-slate-800 dark:bg-[#111B30]/95">
+        <div className="mb-4 flex items-center justify-between">
+          <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#7181A6]">Find your people</p><h1 className="mt-1 font-poppins text-2xl font-bold tracking-tight text-[#172B62] dark:text-white">Discover</h1></div>
+          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#E9EDFF] text-[#315DB4] dark:bg-[#25365B] dark:text-[#C6D2FF]"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg></div>
+        </div>
+        <div className="flex items-center gap-3 rounded-2xl border border-[#E1E7F3] bg-[#F6F8FC] px-4 shadow-sm focus-within:border-[#8199D8] focus-within:ring-4 focus-within:ring-[#5274C8]/10 dark:border-slate-700 dark:bg-[#0D172B]">
+          <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-[#7181A6]"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <input value={term} onChange={event => setTerm(event.target.value)} placeholder="Search people by username" aria-label="Search accounts by username" className="min-w-0 flex-1 bg-transparent py-3.5 text-base text-slate-900 outline-none placeholder:text-slate-400 dark:text-white" />
+          {term && <button type="button" onClick={() => setTerm('')} className="rounded-full px-2 py-1 text-xs font-semibold text-[#315DB4]">Clear</button>}
+        </div>
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+          {discoveryTopics.map((topic, index) => <span key={topic} className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${index === 0 ? 'bg-[#315DB4] text-white' : 'bg-[#EEF1F8] text-[#667493] dark:bg-[#1D2A45] dark:text-slate-300'}`}>{topic}</span>)}
         </div>
       </div>
 
-      <section className="px-4 py-5">
-        <h2 className="mb-3 text-sm font-semibold text-gray-500 dark:text-gray-400">
-          {term ? 'Search results' : 'People on Konnet'}
-        </h2>
-        {loading ? (
-          <div className="py-14 text-center text-sm text-gray-400" role="status">Finding accounts...</div>
-        ) : error ? (
-          <div className="py-12 text-center">
-            <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">{error}</p>
-            <button type="button" onClick={() => findPeople(term)} className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white">Try again</button>
-          </div>
-        ) : results.length === 0 ? (
-          <div className="py-14 text-center">
-            <p className="font-semibold text-gray-700 dark:text-gray-200">No accounts found</p>
-            <p className="mt-1 text-sm text-gray-400">Try another username or invite someone to join Konnet.</p>
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-[22px] border border-slate-100 bg-white px-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            {results.map((user) => (
-              <button
-                key={user.id}
-                type="button"
-                onClick={() => navigate('profile/' + user.username)}
-                className="flex w-full items-center gap-3 rounded-xl py-3 text-left active:bg-slate-50 dark:active:bg-slate-800"
-              >
-                <Avatar user={user} size={48} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-gray-900 dark:text-white">{user.username}</span>
-                  <span className="block truncate text-sm text-gray-500 dark:text-gray-400">{user.name}</span>
-                </span>
-                <span className="rounded-full bg-blue-50 px-4 py-2 text-xs font-bold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">View</span>
-              </button>
-            ))}
-          </div>
-        )}
+      <section className="px-4 pb-6 pt-5">
+        <div className="mb-4 flex items-end justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-[#8190B0]">{term ? 'Search' : 'Your next connection'}</p><h2 className="mt-1 font-poppins text-lg font-bold text-[#172B62] dark:text-white">{term ? 'Search results' : 'People to discover'}</h2></div><span className="text-xs font-medium text-[#8793AC]">{!loading && results.length ? `${results.length} accounts` : ''}</span></div>
+        {loading ? <div className="py-14 text-center text-sm text-gray-400" role="status">Finding accounts...</div> :
+          error ? <div className="py-12 text-center"><p className="mb-3 text-sm text-gray-500 dark:text-gray-400">{error}</p><button type="button" onClick={() => findPeople(term)} className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white">Try again</button></div> :
+          results.length === 0 ? <div className="rounded-3xl border border-dashed border-[#D8DFEE] bg-white px-5 py-14 text-center dark:border-slate-700 dark:bg-[#15213A]"><div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#EEF1FF] text-2xl text-[#315DB4] dark:bg-[#25365B]">⌕</div><p className="mt-4 font-semibold text-gray-700 dark:text-gray-200">No accounts found</p><p className="mt-1 text-sm text-gray-400">Try another username or invite someone to join Konnet.</p></div> :
+          <div className="space-y-2">{results.map(user => <button key={user.id} type="button" onClick={() => navigate('profile/' + user.username)} className="flex w-full items-center gap-3 rounded-2xl border border-[#E8ECF5] bg-white p-3 text-left shadow-sm transition active:scale-[.99] dark:border-slate-800 dark:bg-[#15213A]"><Avatar user={user} size={48}/><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold text-gray-900 dark:text-white">{user.name}</span><span className="block truncate text-xs text-gray-500 dark:text-gray-400">@{user.username}</span></span><span className="rounded-full bg-[#EEF1FF] px-4 py-2 text-xs font-bold text-[#315DB4] dark:bg-[#25365B] dark:text-[#C6D2FF]">View</span></button>)}</div>}
       </section>
-      <BottomNav activePage="explore" navigate={navigate} />
+      <BottomNav activePage="explore" navigate={navigate}/>
     </div>
   );
 }

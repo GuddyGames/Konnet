@@ -17,9 +17,8 @@ export default function TopNav({ navigate }) {
         <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h2l1.3-2h4.4l1.3 2h2A2.5 2.5 0 0 1 20 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.2"/></svg>
       </button>
       <h1 className="font-poppins text-[21px] font-bold tracking-tight text-slate-900 dark:text-white">Explore</h1>
-      <button type="button" onClick={() => navigate('notifications')} aria-label="Notifications" className="konnet-header-action relative">
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9ZM10 21h4a2 2 0 0 1-4 0Z"/></svg>
-        {unreadNotifs > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-rose-500 dark:border-slate-900" />}
+      <button type="button" onClick={() => navigate('explore')} aria-label="Search Konnet" className="konnet-header-action relative">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg>
       </button>
     </header>
   );
