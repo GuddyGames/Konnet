@@ -623,3 +623,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .konnet-create-sheet { background:#fff; }
 .konnet-format-icon { color:#315DB4;border-color:#DCE4F5; }
 .konnet-editor-tools button.active,.konnet-editor-publish { background:#315DB4;border-color:#315DB4; }
+
+/* Centered upload action with a dedicated Reels shortcut directly beneath it. */
+.app-bottom-nav.konnet-reference-nav { display:grid!important;grid-template-columns:1fr 1fr 1fr 1fr 1fr!important;align-items:center;height:112px;padding:7px 12px calc(7px + var(--safe-bottom)); }
+.konnet-reference-nav-item { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;height:100%;padding-top:25px;background:transparent;border:0; }
+.konnet-reference-center { display:flex;flex-direction:column;align-items:center;justify-content:flex-start;height:100%;min-width:0; }
+.konnet-reference-create { display:grid;place-items:center;width:58px;height:58px;flex:0 0 58px;margin-top:-22px;border:5px solid #fff;border-radius:50%;background:linear-gradient(135deg,#315DB4,#526FC5);color:#fff;box-shadow:0 4px 14px #315db444; }
+.konnet-reference-create svg { width:25px;height:25px; }
+.konnet-reference-reels { display:flex;align-items:center;justify-content:center;gap:4px;margin-top:2px;padding:2px 7px;color:#7B8496;font-size:10px;line-height:1.1; }
+.konnet-reference-reels svg { width:14px;height:14px; }
+.konnet-reference-reels.active { color:#315DB4;font-weight:700; }
+.konnet-home { padding-bottom:calc(112px + var(--safe-bottom))!important; }
+@media(min-width:700px){.app-bottom-nav.konnet-reference-nav{height:92px}.konnet-reference-nav-item{padding-top:18px}}
