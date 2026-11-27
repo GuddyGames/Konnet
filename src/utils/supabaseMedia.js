@@ -9,16 +9,19 @@ const makePath = (userId, file) => {
   return userId + '/' + crypto.randomUUID() + '.' + extension;
 };
 
-export const publishPostWithMedia = async ({ userId, files, caption }) => {
+export const publishPostWithMedia = async ({ userId, files, caption, postType = 'photo' }) => {
   if (!files?.length) throw new Error('Choose at least one photo or video.');
   if (files.length > 10) throw new Error('You can add up to 10 files to one post.');
   for (const file of files) {
     if (![...allowedImage, ...allowedVideo].includes(file.type)) throw new Error('Use JPG, PNG, WEBP, MP4 or WEBM files.');
     if (file.size > MAX_FILE_SIZE) throw new Error('Each file must be 50 MB or smaller.');
+    if (postType !== 'photo' && !file.type.startsWith('video/')) throw new Error('Choose a video for this format.');
+    if (postType === 'photo' && !file.type.startsWith('image/')) throw new Error('Choose photos for a standard post.');
   }
 
   const { data: post, error: postError } = await supabase
-    .from('posts').insert({ author_id: userId, caption: caption.trim() }).select('id').single();
+    .from('posts').insert({ author_id: userId, caption: caption.trim(), post_type: postType })
+    .select('id').single();
   if (postError) throw postError;
 
   const uploaded = [];
@@ -26,9 +29,7 @@ export const publishPostWithMedia = async ({ userId, files, caption }) => {
     for (let position = 0; position < files.length; position += 1) {
       const file = files[position];
       const storagePath = makePath(userId, file);
-      const { error: uploadError } = await supabase.storage.from('post-media').upload(storagePath, file, {
-        contentType: file.type, upsert: false,
-      });
+      const { error: uploadError } = await supabase.storage.from('post-media').upload(storagePath, file, { contentType: file.type, upsert: false });
       if (uploadError) throw uploadError;
       uploaded.push(storagePath);
       const { error: mediaError } = await supabase.from('post_media').insert({
@@ -40,7 +41,7 @@ export const publishPostWithMedia = async ({ userId, files, caption }) => {
     return post.id;
   } catch (error) {
     await supabase.from('posts').delete().eq('id', post.id);
-    for (const path of uploaded) await supabase.storage.from('post-media').remove([path]);
+    if (uploaded.length) await supabase.storage.from('post-media').remove(uploaded);
     throw error;
   }
 };
@@ -50,9 +51,7 @@ export const publishStory = async ({ userId, file, caption }) => {
   if (![...allowedImage, ...allowedVideo].includes(file.type)) throw new Error('Use JPG, PNG, WEBP, MP4 or WEBM files.');
   if (file.size > MAX_FILE_SIZE) throw new Error('Story media must be 50 MB or smaller.');
   const storagePath = makePath(userId, file);
-  const { error: uploadError } = await supabase.storage.from('story-media').upload(storagePath, file, {
-    contentType: file.type, upsert: false,
-  });
+  const { error: uploadError } = await supabase.storage.from('story-media').upload(storagePath, file, { contentType: file.type, upsert: false });
   if (uploadError) throw uploadError;
   const { data, error } = await supabase.from('stories').insert({
     author_id: userId, media_path: storagePath,
