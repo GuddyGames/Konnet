@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { startPresenceHeartbeat } from './utils/firestorePresence';
+import { startPresenceHeartbeat } from './utils/supabasePresence';
 import { useUser } from './context/UserContext';
 
 import Login from './pages/Login';
