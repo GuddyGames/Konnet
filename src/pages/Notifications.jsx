@@ -46,7 +46,7 @@ export default function Notifications({ navigate }) {
       }
     };
     load();
-  }, [currentUser]);
+  }, [currentUser?.id]);
 
   const getIcon = (type) => {
     switch (type) {
