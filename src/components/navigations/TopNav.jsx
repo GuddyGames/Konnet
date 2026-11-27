@@ -1,17 +1,10 @@
-import { useState, useEffect } from 'react';
-import { getUnreadNotifCount } from '../../utils/firestoreNotifications';
+import { useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import GuddyAiChat from '../common/GuddyAiChat';
 
 export default function TopNav({ navigate }) {
   const { currentUser } = useUser();
-  const [unreadNotifs, setUnreadNotifs] = useState(0);
   const [aiOpen, setAiOpen] = useState(false);
-
-  useEffect(() => {
-    if (!currentUser) return;
-    getUnreadNotifCount(currentUser.id).then(setUnreadNotifs).catch(() => setUnreadNotifs(0));
-  }, [currentUser]);
 
   return (
     <>
