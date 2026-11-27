@@ -15,6 +15,9 @@ export default function Chat({ conversationId, navigate }) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const bottomRef = useRef();
+  const threadRef = useRef(null);
+  const shouldStickToBottom = useRef(true);
+  const [showLatestButton, setShowLatestButton] = useState(false);
 
   useEffect(() => {
     const viewport = window.visualViewport;
@@ -58,7 +61,27 @@ export default function Chat({ conversationId, navigate }) {
     return () => { active = false; unsubscribe(); };
   }, [conversationId, currentUser?.id]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length]);
+  useEffect(() => {
+    const thread = threadRef.current;
+    if (!thread) return;
+    if (shouldStickToBottom.current) {
+      thread.scrollTo({ top: thread.scrollHeight, behavior: messages.length > 1 ? 'smooth' : 'auto' });
+      setShowLatestButton(false);
+    } else setShowLatestButton(true);
+  }, [messages.length]);
+
+  const handleThreadScroll = () => {
+    const thread = threadRef.current;
+    if (!thread) return;
+    const distance = thread.scrollHeight - thread.scrollTop - thread.clientHeight;
+    shouldStickToBottom.current = distance < 100;
+    setShowLatestButton(distance >= 100);
+  };
+  const scrollToLatest = () => {
+    shouldStickToBottom.current = true;
+    threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: 'smooth' });
+    setShowLatestButton(false);
+  };
 
   const send = async () => {
     const content = input.trim();
@@ -82,7 +105,7 @@ export default function Chat({ conversationId, navigate }) {
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 2.7a2 2 0 0 1-.6 1.8L7.7 9.5a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 1.8-.6l2.7.5a2 2 0 0 1 1.5 1.8Z"/></svg>
         </span>
       </header>
-      <section className="konnet-chat-thread flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-5 scrollbar-hide" aria-label="Messages">
+      <section ref={threadRef} onScroll={handleThreadScroll} className="konnet-chat-thread flex-1 min-h-0 overflow-y-auto overscroll-y-contain touch-pan-y px-4 py-5 scrollbar-hide" aria-label="Messages" style={{ WebkitOverflowScrolling: 'touch', overflowAnchor: 'auto' }}>
         {loading && <p className="py-8 text-center text-sm text-slate-400">Loading conversation...</p>}
         {error && <p role="alert" className="mb-3 text-center text-sm text-red-500">{error}</p>}
         {messages.map(msg => {
@@ -96,7 +119,8 @@ export default function Chat({ conversationId, navigate }) {
         })}
         <div ref={bottomRef}/>
       </section>
-      <footer className="konnet-chat-composer" style={{ bottom: 'var(--keyboard-inset, 0px)' }}>
+      {showLatestButton && <button type="button" onClick={scrollToLatest} className="absolute bottom-[calc(88px+var(--safe-bottom))] right-4 z-30 rounded-full bg-[#315DB4] px-4 py-2 text-xs font-semibold text-white shadow-lg">↓ Latest messages</button>}
+      <footer className="konnet-chat-composer shrink-0" style={{ bottom: 'auto' }}>
         <form className="flex items-center gap-2" onSubmit={e => { e.preventDefault(); send(); }}>
           <div className="konnet-chat-input-wrap flex min-w-0 flex-1 items-center gap-2">
             <span className="konnet-chat-tool-placeholder" aria-hidden="true" title="Attachments — coming later"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m21.4 11.1-8.9 8.9a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg></span>
