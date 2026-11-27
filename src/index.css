@@ -519,3 +519,62 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .konnet-chat-page { height:100dvh; min-height:0; overflow:hidden; position:relative; }
 .konnet-chat-thread { min-height:0; flex:1 1 auto; overflow-y:auto !important; overscroll-behavior-y:contain; touch-action:pan-y; -webkit-overflow-scrolling:touch; }
 .konnet-chat-composer { position:sticky; bottom:0; }
+
+/* Reference-matched Discover home and creator flow. */
+.konnet-home-header { height:76px; padding-top:var(--safe-top); background:#fff; }
+.konnet-home-bell { display:grid; place-items:center; width:48px; height:48px; border-radius:50%; background:#F5F6FA; color:#29334A; }
+.konnet-discover-title { margin:4px 20px 14px; font-family:'Poppins',sans-serif; font-size:26px; line-height:1.2; font-weight:700; color:#111827; }
+.konnet-stories { padding:0 0 16px; }
+.konnet-stories > div { gap:12px; padding-left:18px; padding-right:18px; }
+.konnet-stories button { width:76px; }
+.konnet-stories button span:first-child { width:76px; height:76px; }
+.konnet-feed { max-width:620px; padding:0 14px 18px; }
+.konnet-post-card { position:relative; margin:0 0 14px; padding:0; border-radius:30px; background:#fff; overflow:hidden; }
+.konnet-post-author { position:absolute; z-index:2; left:14px; bottom:16px; padding:0; color:white; }
+.konnet-post-author button span, .konnet-post-author button { color:white; }
+.konnet-post-card > p { position:absolute; z-index:2; left:14px; right:62px; bottom:8px; color:#fff!important; text-shadow:0 1px 4px #0008; }
+.konnet-post-media { aspect-ratio: .88 / 1; border-radius:30px; background:#dfe5f0; }
+.konnet-post-media img { object-fit:cover; }
+.konnet-post-overlay { top:0; right:10px; bottom:0; left:auto; width:46px; min-height:0; flex-direction:column-reverse; justify-content:flex-end; gap:18px; padding:0 0 24px; background:linear-gradient(90deg,transparent,#0002); }
+.konnet-post-overlay button { flex-direction:column; min-width:40px; color:white; text-shadow:0 1px 3px #0008; }
+.konnet-post-overlay button span { font-size:11px; }
+.konnet-create-page { min-height:100dvh; background:#fff; color:#1f2937; padding-top:var(--safe-top); padding-bottom:var(--safe-bottom); }
+.konnet-create-header { display:flex; height:58px; align-items:center; justify-content:space-between; padding:0 18px; border-bottom:1px solid #e5e7eb; }
+.konnet-create-header>button:first-child { width:30px; text-align:left; font-size:32px; line-height:1; color:#334155; }
+.konnet-create-heading { font-weight:700; font-size:16px; }
+.konnet-share-link { font-size:14px; font-weight:700; color:#315db4; }
+.konnet-share-link:disabled { opacity:.4; }
+.konnet-create-sheet-wrap { position:fixed; inset:0; z-index:60; display:flex; align-items:flex-end; }
+.konnet-create-backdrop { position:absolute; inset:0; background:#10182866; }
+.konnet-create-sheet { position:relative; width:100%; padding:10px 14px calc(20px + var(--safe-bottom)); border-radius:24px 24px 0 0; background:white; box-shadow:0 -10px 40px #10182822; }
+.konnet-sheet-handle { width:42px; height:4px; margin:0 auto 14px; border-radius:10px; background:#cbd5e1; }
+.konnet-format-row { display:flex; width:100%; align-items:center; gap:13px; padding:12px 10px; margin:5px 0; border:1px solid #e5e7eb; border-radius:14px; }
+.konnet-format-icon { display:grid; width:40px; height:40px; place-items:center; border:1px solid #e2e8f0; border-radius:50%; color:#6b4bb8; font-size:21px; }
+.konnet-format-row strong { display:block; font-size:14px; font-weight:700; }
+.konnet-format-row small { display:block; margin-top:3px; color:#64748b; font-size:11px; }
+.konnet-editor { max-width:620px; margin:0 auto; }
+.konnet-editor-author { display:flex; align-items:center; gap:12px; padding:12px 18px; font-size:13px; font-weight:600; }
+.konnet-editor-avatar { display:grid; width:34px; height:34px; place-items:center; border-radius:50%; background:#e9edff; color:#315db4; font-weight:700; }
+.konnet-editor-caption { width:100%; padding:10px 18px; border:0; border-top:1px solid #e5e7eb; outline:0; resize:none; font-size:14px; }
+.konnet-gallery-picker { display:flex; width:100%; min-height:210px; align-items:center; justify-content:center; padding:12px 18px; background:#f8fafc; }
+.konnet-gallery-picker>span { display:flex; flex-direction:column; align-items:center; gap:10px; color:#64748b; }
+.konnet-gallery-picker>span b { font-size:34px; font-weight:400; color:#315db4; }
+.konnet-gallery-picker>span small { font-size:12px; }
+.konnet-gallery-grid { display:flex; width:100%; gap:8px; overflow-x:auto; }
+.konnet-gallery-thumb { width:calc(33.333% - 6px); height:155px; flex:0 0 calc(33.333% - 6px); border-radius:12px; object-fit:cover; background:#e2e8f0; }
+.konnet-editor-tools { display:flex; gap:8px; overflow-x:auto; padding:12px 14px; border-bottom:1px solid #e5e7eb; }
+.konnet-editor-tools button { flex:0 0 auto; padding:9px 13px; border:1px solid #e5e7eb; border-radius:99px; font-size:12px; }
+.konnet-editor-tools button.active { border-color:#315db4; background:#315db4; color:#fff; }
+.konnet-editor-bottom-tools { display:flex; align-items:center; gap:18px; padding:14px 18px; color:#64748b; font-size:13px; }
+.konnet-editor-publish { display:block; width:calc(100% - 32px); margin:16px; padding:14px; border-radius:12px; background:#315db4; color:white; font-weight:700; }
+.konnet-editor-publish:disabled { opacity:.45; }
+.konnet-upload-progress { margin:10px 16px; padding:14px; border:1px solid #e5e7eb; border-radius:12px; }
+.konnet-upload-progress div { display:flex; justify-content:space-between; font-size:12px; }
+.konnet-upload-progress span { display:block; height:5px; margin:9px 0; border-radius:10px; background:#e9edff; overflow:hidden; }
+.konnet-upload-progress i { display:block; height:100%; border-radius:10px; background:#6b3bb2; transition:width .2s; }
+.konnet-upload-progress small { color:#64748b; font-size:11px; }
+.konnet-upload-complete { display:flex; min-height:65vh; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; }
+.konnet-upload-complete>b { display:grid; width:58px; height:58px; place-items:center; border-radius:50%; background:#e9edff; color:#315db4; font-size:30px; }
+.konnet-upload-complete h2 { font-size:20px; font-weight:700; }
+.konnet-upload-complete p { color:#64748b; font-size:13px; }
+@media(min-width:700px){.konnet-create-sheet{max-width:520px;margin:0 auto 24px;border-radius:24px}.konnet-create-sheet-wrap{justify-content:center}.konnet-create-backdrop{background:#10182866}}
