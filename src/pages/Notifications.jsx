@@ -9,6 +9,17 @@ export default function Notifications({ navigate }) {
   const [notifs, setNotifs] = useState([]);
   const [fromUsers, setFromUsers] = useState({});
   const [loading, setLoading] = useState(true);
+  const [pushPermission, setPushPermission] = useState(() => ('Notification' in window ? Notification.permission : 'unsupported'));
+
+  const enablePush = async () => {
+    if (!('Notification' in window)) { setPushPermission('unsupported'); return; }
+    const permission = await Notification.requestPermission();
+    setPushPermission(permission);
+    if (permission === 'granted') {
+      const registration = await navigator.serviceWorker?.getRegistration();
+      registration?.showNotification('Konnet alerts enabled', { body: 'This device can show Konnet alerts when supported.', icon: '/icons/konnet-icon.svg' });
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -27,6 +38,7 @@ export default function Notifications({ navigate }) {
 
         // Mark everything as read now that they've opened the page
         await markAllNotificationsRead(currentUser.id);
+        setNotifs(items => items.map(item => ({ ...item, read_at: item.read_at || new Date().toISOString() })));
       } catch (err) {
         console.error('Failed to load notifications:', err);
       } finally {
@@ -77,6 +89,7 @@ export default function Notifications({ navigate }) {
           </svg>
         </button>
         <h2 className="font-bold font-poppins text-gray-900 dark:text-white">Notifications</h2>
+        <button type="button" onClick={enablePush} className="ml-auto rounded-full bg-blue-600 px-3 py-2 text-xs font-semibold text-white">{pushPermission === 'granted' ? 'Alerts enabled' : pushPermission === 'denied' ? 'Alerts blocked' : 'Enable alerts'}</button>
       </div>
 
       {loading ? (
