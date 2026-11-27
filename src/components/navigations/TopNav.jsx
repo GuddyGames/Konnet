@@ -1,21 +1,21 @@
 import { useState } from 'react';
 import { useUser } from '../../context/UserContext';
+import Avatar from '../common/Avatar';
 import GuddyAiChat from '../common/GuddyAiChat';
 
 export default function TopNav({ navigate }) {
   const { currentUser } = useUser();
   const [aiOpen, setAiOpen] = useState(false);
-
   return (
     <>
-      <header className="konnet-home-header sticky top-0 z-40 flex items-center justify-between px-4">
-        <button type="button" onClick={() => setAiOpen(true)} aria-label="Open G^_^E Ai" className="konnet-header-action flex items-center gap-1.5 !w-auto px-2">
-          <span className="font-poppins text-sm font-extrabold tracking-tight text-[#315DB4] dark:text-[#C6D2FF]">Ai</span>
+      <header className="konnet-home-header flex items-center justify-between px-5">
+        <button type="button" onClick={() => navigate('profile/' + currentUser?.username)} aria-label="Open profile" className="rounded-full">
+          <Avatar user={currentUser} size={52} />
         </button>
-        <h1 className="font-poppins text-[21px] font-bold tracking-tight text-slate-900 dark:text-white">Explore</h1>
-        <button type="button" onClick={() => navigate('explore')} aria-label="Search Konnet" className="konnet-header-action relative">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg>
+        <button type="button" onClick={() => navigate('notifications')} aria-label="Notifications" className="konnet-home-bell">
+          <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9ZM10 21h4a2 2 0 0 1-4 0Z"/></svg>
         </button>
+        <button type="button" onClick={() => setAiOpen(true)} className="sr-only">Open Ai</button>
       </header>
       {aiOpen && <GuddyAiChat onClose={() => setAiOpen(false)} />}
     </>
