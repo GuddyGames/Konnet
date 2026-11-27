@@ -635,3 +635,46 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .konnet-reference-reels.active { color:#315DB4;font-weight:700; }
 .konnet-home { padding-bottom:calc(112px + var(--safe-bottom))!important; }
 @media(min-width:700px){.app-bottom-nav.konnet-reference-nav{height:92px}.konnet-reference-nav-item{padding-top:18px}}
+
+/* Final upload control: icon-only, raised and overlapping the nav edge like the supplied reference. */
+.app-bottom-nav.konnet-reference-nav {
+  height:104px!important;
+  padding:6px 12px calc(6px + var(--safe-bottom))!important;
+  overflow:visible!important;
+  border-radius:0!important;
+}
+.konnet-reference-center {
+  position:relative;
+  z-index:5;
+  align-items:center;
+  justify-content:flex-start;
+  overflow:visible;
+}
+.konnet-reference-create {
+  width:78px!important;
+  height:78px!important;
+  flex:0 0 78px!important;
+  margin-top:-34px!important;
+  border:6px solid #fff!important;
+  border-radius:50%!important;
+  background:#ee4b43!important;
+  color:#fff!important;
+  box-shadow:0 5px 15px rgba(238,75,67,.24)!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.konnet-reference-create svg { width:30px!important;height:30px!important;stroke-width:2.2!important; }
+.konnet-reference-reels {
+  position:relative;
+  z-index:6;
+  margin-top:0!important;
+  min-height:20px;
+  font-size:10px!important;
+  color:#7B8496!important;
+}
+.konnet-reference-nav-item { padding-top:22px!important; }
+.konnet-home { padding-bottom:calc(104px + var(--safe-bottom))!important; }
+@media(min-width:700px) {
+  .app-bottom-nav.konnet-reference-nav { height:92px!important; }
+  .konnet-reference-create { width:72px!important;height:72px!important;margin-top:-31px!important; }
+}
