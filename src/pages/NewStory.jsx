@@ -1,102 +1,52 @@
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useUser } from '../context/UserContext';
-import { createStory } from '../utils/firestoreStories';
-import { fileToBase64 } from '../utils/helpers';
-
-const STORY_COLORS = [
-  '#7C3AED', '#2563EB', '#EC4899', '#10B981', '#F59E0B', '#EF4444', '#0891B2', '#7C3AED'
-];
+import { publishStory } from '../utils/supabaseMedia';
 
 export default function NewStory({ navigate, goBack }) {
   const { currentUser } = useUser();
-  const [image, setImage] = useState(null);
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState('');
   const [caption, setCaption] = useState('');
-  const [color, setColor] = useState(STORY_COLORS[0]);
   const [posting, setPosting] = useState(false);
-  const fileRef = useRef();
+  const [error, setError] = useState('');
+  const inputRef = useRef(null);
 
-  const handleFile = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const base64 = await fileToBase64(file);
-    setImage(base64);
+  const selectFile = next => {
+    if (!next) return;
+    if (preview) URL.revokeObjectURL(preview);
+    setFile(next);
+    setPreview(URL.createObjectURL(next));
+    setError('');
   };
 
-  const post = async () => {
-    if (!image && !caption.trim()) return alert('Add an image or text for your story.');
-    setPosting(true);
+  const share = async () => {
+    if (!file) { setError('Choose a photo or video for your story.'); return; }
+    setPosting(true); setError('');
     try {
-      await createStory({
-        authorId: currentUser.id,
-        image: image || null,
-        caption: caption.trim(),
-        color,
-      });
+      await publishStory({ userId: currentUser.id, file, caption });
       navigate('home');
     } catch (err) {
-      console.error('Failed to post story:', err);
-      alert('Something went wrong. Please try again.');
-    } finally {
-      setPosting(false);
-    }
+      console.error('Story upload failed:', err);
+      setError(err.message || 'Could not publish your story.');
+    } finally { setPosting(false); }
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-4">
-        <button onClick={goBack || (() => navigate('home'))} className="text-white text-2xl">&times;</button>
-        <h2 className="text-white font-bold font-poppins">New Story</h2>
-        <button onClick={post} disabled={posting} className="text-blue-400 font-bold disabled:opacity-40">
-          {posting ? '...' : 'Share'}
-        </button>
+    <div className="flex min-h-[100dvh] flex-col bg-gray-950 pb-[env(safe-area-inset-bottom)]">
+      <header className="flex items-center justify-between px-4 py-4 pt-[calc(1rem+env(safe-area-inset-top))]">
+        <button onClick={goBack || (() => navigate('home'))} className="text-2xl text-white" aria-label="Close">×</button>
+        <h2 className="font-bold text-white">New Story</h2>
+        <button onClick={share} disabled={posting || !file} className="font-bold text-blue-400 disabled:opacity-40">{posting ? 'Sharing…' : 'Share'}</button>
+      </header>
+      <button type="button" onClick={() => inputRef.current?.click()} className="relative mx-4 flex min-h-[52vh] flex-1 items-center justify-center overflow-hidden rounded-2xl bg-slate-800 text-center text-white">
+        {preview && file?.type.startsWith('video/') ? <video src={preview} controls playsInline className="max-h-full max-w-full" /> : preview ? <img src={preview} alt="Story preview" className="max-h-full max-w-full object-contain" /> : <span className="px-6"><span className="block text-5xl">＋</span><span className="mt-3 block font-semibold">Tap to choose a photo or video</span><span className="mt-1 block text-sm text-white/60">Visible for 24 hours</span></span>}
+      </button>
+      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" className="hidden" onChange={e => selectFile(e.target.files?.[0])} />
+      <div className="px-4 pt-4">
+        <input value={caption} onChange={e => setCaption(e.target.value)} placeholder="Add a caption…" className="w-full rounded-xl bg-gray-800 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500" />
+        {error && <p role="alert" className="mt-3 text-sm text-red-400">{error}</p>}
+        <button onClick={() => inputRef.current?.click()} className="mt-3 w-full rounded-xl border border-white/15 py-3 text-sm font-semibold text-white">Choose media</button>
       </div>
-
-      {/* Preview */}
-      <div
-        className="flex-1 mx-4 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden cursor-pointer min-h-64"
-        style={{ background: image ? '#000' : color }}
-        onClick={() => fileRef.current?.click()}
-      >
-        {image
-          ? <img src={image} alt="story preview" className="max-w-full max-h-full object-contain" />
-          : (
-            <div className="text-center px-6">
-              <p className="text-6xl mb-4">&#128247;</p>
-              <p className="text-white font-semibold text-lg">Tap to add photo</p>
-              <p className="text-white/60 text-sm mt-1">or use the color below</p>
-            </div>
-          )
-        }
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-      </div>
-
-      {/* Caption input */}
-      <div className="px-4 mt-4">
-        <input
-          value={caption}
-          onChange={e => setCaption(e.target.value)}
-          placeholder="Add a caption..."
-          className="w-full bg-gray-800 text-white rounded-xl px-4 py-3 text-sm outline-none placeholder-gray-500"
-        />
-      </div>
-
-      {/* Color picker */}
-      {!image && (
-        <div className="px-4 mt-4">
-          <p className="text-gray-400 text-xs mb-2">Background Color</p>
-          <div className="flex gap-3 flex-wrap">
-            {STORY_COLORS.map(c => (
-              <button
-                key={c}
-                onClick={() => setColor(c)}
-                className="w-8 h-8 rounded-full border-2 transition-all"
-                style={{ background: c, borderColor: color === c ? 'white' : 'transparent' }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
