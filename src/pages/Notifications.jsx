@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
-import { getUserNotifications, markAllNotificationsRead } from '../utils/firestoreNotifications';
+import { getUserNotifications, markAllNotificationsRead } from '../utils/supabaseNotifications';
 import { formatTime } from '../utils/helpers';
 import Avatar from '../components/common/Avatar';
 
@@ -19,7 +19,7 @@ export default function Notifications({ navigate }) {
         setNotifs(all);
 
         // Resolve each notification's sender up front (async, can't await during render)
-        const uniqueIds = [...new Set(all.map(n => n.fromId))];
+        const uniqueIds = [...new Set(all.map(n => n.actor_id).filter(Boolean))];
         const entries = await Promise.all(
           uniqueIds.map(async id => [id, await getUserById(id)])
         );
@@ -51,7 +51,9 @@ export default function Notifications({ navigate }) {
       case 'like': return 'liked your post';
       case 'comment': return `commented: "${notif.text}"`;
       case 'follow': return 'started following you';
+      case 'follow_request': return 'requested to follow you';
       case 'message': return 'sent you a message';
+      case 'mention': return 'mentioned you';
       default: return 'interacted with you';
     }
   };
@@ -59,9 +61,9 @@ export default function Notifications({ navigate }) {
   const handleClick = (notif, from) => {
     if (notif.type === 'follow') {
       navigate(`profile/${from.username}`);
-    } else if (notif.type === 'message' && notif.conversationId) {
+    } else if (notif.type === 'message' && notif.conversation_id) {
       navigate(`chat/${notif.conversationId}`);
-    } else if (notif.postId) {
+    } else if (notif.post_id) {
       navigate(`post/${notif.postId}`);
     }
   };
@@ -86,13 +88,13 @@ export default function Notifications({ navigate }) {
       ) : (
         <div className="divide-y divide-gray-100 dark:divide-slate-800">
           {notifs.map(notif => {
-            const from = fromUsers[notif.fromId];
+            const from = fromUsers[notif.actor_id];
             if (!from) return null;
             return (
               <div
                 key={notif.id}
                 className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
-                  !notif.read ? 'bg-blue-50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-slate-800'
+                  !notif.read_at ? 'bg-blue-50 dark:bg-blue-900/10' : 'hover:bg-gray-50 dark:hover:bg-slate-800'
                 }`}
                 onClick={() => handleClick(notif, from)}
               >
@@ -104,7 +106,7 @@ export default function Notifications({ navigate }) {
                   <p className="text-sm text-gray-900 dark:text-white">
                     <span className="font-semibold">{from.username}</span> {getText(notif)}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">{formatTime(notif.timestamp)}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{formatTime(new Date(notif.created_at).getTime())}</p>
                 </div>
                 {!notif.read && <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />}
               </div>
