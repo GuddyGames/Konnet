@@ -88,45 +88,42 @@ export default function PostCard({ post, navigate, onUpdate }) {
 
   return (
     <article className="konnet-post-card animate-fadeSlideIn">
-      <div className="konnet-post-author">
-        <button type="button" onClick={() => navigate(`profile/${author.username}`)} className="shrink-0">
-          <Avatar user={author} size={48} />
-        </button>
-        <button type="button" onClick={() => navigate(`profile/${author.username}`)} className="min-w-0 flex-1 text-left">
-          <span className="block truncate font-poppins text-[16px] font-bold leading-5 text-slate-950 dark:text-white">{author.name || author.username}</span>
-          <span className="block truncate text-sm text-slate-500 dark:text-slate-400">@{author.username} · {formatTime(post.timestamp)}</span>
-        </button>
-        <button type="button" aria-label="More post options" className="px-2 text-xl text-slate-500">···</button>
-      </div>
-
-      {post.caption && <p className="px-3 pb-2 text-sm leading-5 text-slate-800 dark:text-slate-200">{post.caption}</p>}
-
-      <div className="konnet-post-media relative aspect-[1.08/1] w-full cursor-pointer overflow-hidden" onClick={handleDoubleTap}>
+      <div className="konnet-post-media relative w-full cursor-pointer overflow-hidden" onClick={handleDoubleTap}>
         {post.image
-          ? <img src={post.image} alt="Post by user" className="h-full w-full object-cover" />
-          : <div className="h-full w-full" style={{ background: getGradient(post.gradientIndex || 0) }} />
-        }
-        {showHeart && <div className="pointer-events-none absolute inset-0 flex items-center justify-center"><span className="text-8xl">❤️</span></div>}
-        <div className="konnet-post-overlay absolute inset-x-0 bottom-0 flex items-center gap-4 px-4 py-3 text-white">
-          <button type="button" onClick={(e) => { e.stopPropagation(); setShowComments(s => !s); }} className="flex items-center gap-1.5" aria-label="Comments">
-            <Icon><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></Icon><span className="text-sm font-semibold">{comments.length}</span>
+          ? <img src={post.image} alt="Post by user" className="h-full w-full object-cover" onError={event => { event.currentTarget.style.display = 'none'; }} />
+          : <div className="konnet-post-image-fallback" />}
+        {showHeart && <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"><span className="text-8xl">❤️</span></div>}
+        <div className="konnet-post-shade" />
+        <div className="konnet-post-author">
+          <button type="button" onClick={event => { event.stopPropagation(); navigate(`profile/${author.username}`); }} className="shrink-0">
+            <Avatar user={author} size={48} />
           </button>
-          <button type="button" onClick={(e) => { e.stopPropagation(); toggleLike(); }} className="flex items-center gap-1.5" aria-label={liked ? 'Unlike post' : 'Like post'}>
-            <Icon><path fill={liked ? 'currentColor' : 'none'} d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></Icon><span className="text-sm font-semibold">{likeCount}</span>
+          <button type="button" onClick={event => { event.stopPropagation(); navigate(`profile/${author.username}`); }} className="min-w-0 text-left">
+            <span className="block truncate font-poppins text-[15px] font-bold leading-5">{author.name || author.username}</span>
+            <span className="block truncate text-xs opacity-80">@{author.username}</span>
           </button>
-          <span className="flex-1" />
-          <button type="button" onClick={(e) => { e.stopPropagation(); handleShare(); }} aria-label="Share post"><Icon><path d="m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13"/></Icon></button>
-          <button type="button" onClick={(e) => { e.stopPropagation(); setSaved(s => !s); }} aria-label={saved ? 'Unsave post' : 'Save post'}><Icon><path fill={saved ? 'currentColor' : 'none'} d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></Icon></button>
+          <span className="konnet-post-time">{formatTime(post.timestamp)}</span>
+        </div>
+        {post.caption && <p className="konnet-post-caption">{post.caption}</p>}
+        <div className="konnet-post-overlay">
+          <button type="button" onClick={event => { event.stopPropagation(); toggleLike(); }} aria-label={liked ? 'Unlike post' : 'Like post'}>
+            <Icon><path fill={liked ? 'currentColor' : 'none'} d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></Icon><span>{likeCount}</span>
+          </button>
+          <button type="button" onClick={event => { event.stopPropagation(); handleShare(); }} aria-label="Share post">
+            <Icon><path d="m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13"/></Icon><span>Share</span>
+          </button>
+          <button type="button" onClick={event => { event.stopPropagation(); setShowComments(value => !value); }} aria-label="Comments">
+            <Icon><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></Icon><span>{comments.length}</span>
+          </button>
         </div>
       </div>
-
       {showComments && (
         <div className="px-3 pb-3 pt-2">
-          {comments.map(c => <p key={c.id} className="py-1 text-sm text-slate-700 dark:text-slate-200"><strong>{commentAuthors[c.authorId]?.username || 'user'}</strong> {c.text}</p>)}
-          <div className="mt-2 flex items-center gap-2 border-t border-slate-200 pt-2 dark:border-slate-700">
-            <Avatar user={currentUser} size={28} />
-            <input value={commentText} onChange={e => setCommentText(e.target.value)} onKeyDown={e => e.key === 'Enter' && addComment()} placeholder="Add a comment..." className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
-            {commentText.trim() && <button type="button" onClick={addComment} className="text-sm font-semibold text-blue-600">Post</button>}
+          {comments.map(comment => <p key={comment.id} className="py-1 text-sm"><strong>{commentAuthors[comment.authorId]?.username || 'user'}</strong> {comment.text}</p>)}
+          <div className="mt-2 flex items-center gap-2 border-t border-slate-200 pt-2">
+            <Avatar user={currentUser} size={28}/>
+            <input value={commentText} onChange={event => setCommentText(event.target.value)} onKeyDown={event => event.key === 'Enter' && addComment()} placeholder="Add a comment…" className="min-w-0 flex-1 bg-transparent text-sm outline-none"/>
+            {commentText.trim() && <button type="button" onClick={addComment} className="text-sm font-semibold text-[#315DB4]">Post</button>}
           </div>
         </div>
       )}
