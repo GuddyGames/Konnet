@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useUser } from '../../context/UserContext';
 import PostCard from './PostCard';
+import { getPublicMediaUrl } from '../../utils/supabaseMedia';
 
 export default function Feed({ navigate }) {
   const { currentUser } = useUser();
@@ -19,18 +20,28 @@ export default function Feed({ navigate }) {
       // collection after the fresh-start migration.
       const { data, error: queryError } = await supabase
         .from('posts')
-        .select('id, author_id, caption, created_at, visibility')
+        .select('id, author_id, caption, created_at')
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (queryError) throw queryError;
 
+      const postIds = (data || []).map(post => post.id);
+      const { data: mediaRows, error: mediaError } = postIds.length
+        ? await supabase.from('post_media').select('id, post_id, storage_path, media_type, position').in('post_id', postIds).order('position')
+        : { data: [], error: null };
+      if (mediaError) throw mediaError;
+      const mediaByPost = (mediaRows || []).reduce((map, media) => {
+        (map[media.post_id] ||= []).push({ ...media, url: getPublicMediaUrl('post-media', media.storage_path) });
+        return map;
+      }, {});
       const mappedPosts = (data || []).map((post) => ({
         id: post.id,
         authorId: post.author_id,
         caption: post.caption || '',
         timestamp: post.created_at ? new Date(post.created_at).getTime() : Date.now(),
-        image: null,
+        image: mediaByPost[post.id]?.[0]?.url || null,
+        media: mediaByPost[post.id] || [],
         likes: [],
         comments: [],
         gradientIndex: 0,
