@@ -7,6 +7,7 @@ export default function Home({ navigate }) {
   return (
     <div className="app-page-with-nav konnet-home min-h-[100dvh] bg-white dark:bg-[#0B1020]">
       <TopNav navigate={navigate} />
+      <h1 className="konnet-discover-title">Discover</h1>
       <StoriesBar navigate={navigate} />
       <main className="konnet-feed mx-auto w-full px-3 pb-4 pt-3">
         <Feed navigate={navigate} />
