@@ -4,6 +4,7 @@ import { useUser } from '../context/UserContext';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import ProfileGrid from '../components/profile/ProfileGrid';
 import BottomNav from '../components/navigations/BottomNav';
+import { getPublicMediaUrl } from '../utils/supabaseMedia';
 
 export default function Profile({ username, navigate }) {
   const { currentUser, getUserByUsername } = useUser();
@@ -23,11 +24,31 @@ export default function Profile({ username, navigate }) {
         .select('id, author_id, caption, created_at')
         .eq('author_id', profile.id).order('created_at', { ascending: false });
       if (error) throw error;
-      setPosts((data || []).map(post => ({
-        id: post.id, authorId: post.author_id, caption: post.caption || '',
-        timestamp: post.created_at ? new Date(post.created_at).getTime() : Date.now(),
-        image: null, gradientIndex: 0,
-      })));
+      const postIds = (data || []).map(post => post.id);
+      const { data: mediaRows, error: mediaError } = postIds.length
+        ? await supabase.from('post_media')
+            .select('id, post_id, storage_path, media_type, position')
+            .in('post_id', postIds).order('position', { ascending: true })
+        : { data: [], error: null };
+      if (mediaError) throw mediaError;
+      const mediaByPost = (mediaRows || []).reduce((map, media) => {
+        (map[media.post_id] ||= []).push({
+          ...media,
+          url: getPublicMediaUrl('post-media', media.storage_path),
+        });
+        return map;
+      }, {});
+      setPosts((data || []).map(post => {
+        const media = mediaByPost[post.id] || [];
+        const primary = media[0] || null;
+        return {
+          id: post.id, authorId: post.author_id, caption: post.caption || '',
+          timestamp: post.created_at ? new Date(post.created_at).getTime() : Date.now(),
+          media, image: primary?.media_type === 'image' ? primary.url : null,
+          video: primary?.media_type === 'video' ? primary.url : null,
+          mediaType: primary?.media_type || null,
+        };
+      }));
     } catch (error) {
       console.error('Could not load profile:', error);
       setLoadError('We couldn’t load this profile. Check your connection and try again.');
