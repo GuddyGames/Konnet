@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { getAvatarColor } from '../utils/helpers';
+import { addNotification } from '../utils/supabaseNotifications';
 
 const UserContext = createContext(null);
 
@@ -217,6 +218,10 @@ export const UserProvider = ({ children }) => {
       : await supabase.from('follows').insert({ follower_id: currentUser.id, following_id: targetUserId });
 
     if (result.error) throw result.error;
+    if (!isFollowing) {
+      try { await addNotification(targetUserId, currentUser.id, 'follow'); }
+      catch (notificationError) { console.error('Could not create follow notification:', notificationError); }
+    }
 
     setCurrentUser((previous) => ({
       ...previous,
