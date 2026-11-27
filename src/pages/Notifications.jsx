@@ -40,7 +40,7 @@ export default function Notifications({ navigate }) {
     switch (type) {
       case 'like': return '\u2764\uFE0F';
       case 'comment': return '\uD83D\uDCAC';
-      case 'follow': return '\uD83D\uDC64';
+      case 'follow': case 'follow_request': return '\uD83D\uDC64';
       case 'message': return '\u2709\uFE0F';
       default: return '\uD83D\uDD14';
     }
@@ -49,7 +49,7 @@ export default function Notifications({ navigate }) {
   const getText = (notif) => {
     switch (notif.type) {
       case 'like': return 'liked your post';
-      case 'comment': return `commented: "${notif.text}"`;
+      case 'comment': return 'commented on your post';
       case 'follow': return 'started following you';
       case 'follow_request': return 'requested to follow you';
       case 'message': return 'sent you a message';
@@ -62,9 +62,9 @@ export default function Notifications({ navigate }) {
     if (notif.type === 'follow') {
       navigate(`profile/${from.username}`);
     } else if (notif.type === 'message' && notif.conversation_id) {
-      navigate(`chat/${notif.conversationId}`);
+      navigate(`chat/${notif.conversation_id}`);
     } else if (notif.post_id) {
-      navigate(`post/${notif.postId}`);
+      navigate(`post/${notif.post_id}`);
     }
   };
 
@@ -108,7 +108,7 @@ export default function Notifications({ navigate }) {
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">{formatTime(new Date(notif.created_at).getTime())}</p>
                 </div>
-                {!notif.read && <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />}
+                {!notif.read_at && <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />}
               </div>
             );
           })}
