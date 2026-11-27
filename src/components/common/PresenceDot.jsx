@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { listenToUserPresence } from '../../utils/firestorePresence';
+import { listenToUserPresence } from '../../utils/supabasePresence';
 
 // Drop this next to any <Avatar> to show a live "online now" green dot.
 // The parent element needs className="relative" for positioning to work,
