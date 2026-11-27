@@ -32,7 +32,10 @@ export default function Profile({ username, navigate }) {
       console.error('Could not load profile:', error);
       setLoadError('We couldn’t load this profile. Check your connection and try again.');
     } finally { setLoading(false); }
-  }, [username, currentUser?.id, currentUser?.username, getUserByUsername]);
+  // getUserByUsername is recreated by the context provider; depending on it
+  // here causes the profile request to restart on every render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username, currentUser?.id, currentUser?.username]);
 
   useEffect(() => { load(); }, [load]);
   const isMe = currentUser?.id === user?.id;
