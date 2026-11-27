@@ -578,3 +578,48 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .konnet-upload-complete h2 { font-size:20px; font-weight:700; }
 .konnet-upload-complete p { color:#64748b; font-size:13px; }
 @media(min-width:700px){.konnet-create-sheet{max-width:520px;margin:0 auto 24px;border-radius:24px}.konnet-create-sheet-wrap{justify-content:center}.konnet-create-backdrop{background:#10182866}}
+
+/* Exact reference geometry for the Discover screen; Konnet auth palette retained. */
+.konnet-home { background:#fff!important; color:var(--konnet-ink); padding-bottom:calc(78px + var(--safe-bottom)); }
+.konnet-home-header { height:86px; padding:calc(var(--safe-top) + 10px) 20px 8px; display:flex; align-items:center; justify-content:space-between; }
+.konnet-home-header>button:first-child { width:54px; height:54px; overflow:hidden; }
+.konnet-home-header>button:first-child>div { width:54px!important;height:54px!important; }
+.konnet-home-bell { width:50px;height:50px;background:#F5F6FB;color:#172B62; }
+.konnet-discover-title { margin:10px 20px 18px; font-size:26px; font-weight:600; line-height:1.2; letter-spacing:-.5px; color:#17233E; }
+.konnet-stories { width:100%; padding:0 0 18px; background:#fff; }
+.konnet-stories-track { display:flex; gap:12px; overflow-x:auto; padding:0 18px; scrollbar-width:none; }
+.konnet-stories-track::-webkit-scrollbar { display:none; }
+.konnet-story-item { display:flex; width:82px; flex:0 0 82px; flex-direction:column; align-items:center; gap:7px; color:#263653; font-size:12px; }
+.konnet-story-item>span:last-child { max-width:82px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.konnet-story-ring { width:78px;height:78px;display:grid;place-items:center;border-radius:50%;padding:3px; }
+.konnet-story-ring.has-story { border:2px solid #315DB4; }
+.konnet-story-ring.add-story { background:#F7EDE9; color:#315DB4; }
+.konnet-story-ring.add-story b { font-size:32px; font-weight:400; line-height:1; }
+.konnet-feed { max-width:560px; padding:0 14px 18px!important; }
+.konnet-post-card { position:relative; margin:0 0 14px; padding:0; overflow:hidden; border-radius:30px; background:#172B62; }
+.konnet-post-media { position:relative; width:100%; aspect-ratio:.88/1; overflow:hidden; border-radius:30px; background:#dce3f2; }
+.konnet-post-media>img { position:absolute; inset:0; width:100%;height:100%;object-fit:cover; }
+.konnet-post-image-fallback { position:absolute;inset:0;background:linear-gradient(145deg,#dce5f7,#9aadd8 52%,#315db4); }
+.konnet-post-shade { position:absolute;inset:35% 0 0;background:linear-gradient(180deg,transparent 0%,rgba(9,20,48,.12) 35%,rgba(9,20,48,.82) 100%);pointer-events:none; }
+.konnet-post-author { position:absolute;z-index:2;left:14px;right:58px;bottom:54px;display:flex;align-items:center;gap:9px;color:white; }
+.konnet-post-author>button:first-child>div { border:2px solid rgba(255,255,255,.8); }
+.konnet-post-author>button:nth-child(2) { flex:1;min-width:0; }
+.konnet-post-time { font-size:10px;white-space:nowrap;color:#fff9; }
+.konnet-post-caption { position:absolute;z-index:2;left:14px;right:60px;bottom:12px;margin:0;color:white;font-size:12px;line-height:1.35;text-shadow:0 1px 4px #0008;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+.konnet-post-overlay { position:absolute;z-index:3;top:0;right:7px;bottom:12px;display:flex;flex-direction:column-reverse;justify-content:flex-start;align-items:center;gap:18px;width:46px;padding:0 0 12px;background:linear-gradient(90deg,transparent,rgba(0,0,0,.12)); }
+.konnet-post-overlay button { display:flex;flex-direction:column;align-items:center;gap:4px;color:white;text-shadow:0 1px 4px #0008;font-size:11px; }
+.konnet-post-overlay button svg { width:22px;height:22px; }
+.app-bottom-nav.konnet-reference-nav { left:0;right:0;width:100%;height:78px;padding:5px 12px calc(5px + var(--safe-bottom));grid-template-columns:1fr 1fr 1.15fr 1fr 1fr; background:rgba(255,255,255,.97)!important;color:#7B8496!important;border-top:1px solid #EDF0F6;box-shadow:0 -5px 20px rgba(23,35,62,.05);backdrop-filter:blur(16px); }
+.konnet-reference-nav-item { min-width:0;height:100%;color:#7B8496; }
+.konnet-reference-nav-item[aria-current="page"] { color:#315DB4; }
+.konnet-reference-nav-icon { position:relative;display:grid;place-items:center;width:30px;height:30px; }
+.konnet-reference-nav-icon svg { width:23px;height:23px; }
+.konnet-reference-nav-label { font-size:10px;line-height:1.1;font-weight:500; }
+.konnet-reference-create { display:grid;place-items:center;width:58px;height:58px;margin-top:-26px;border-radius:50%;background:linear-gradient(135deg,#315DB4,#526FC5);color:white;border:5px solid white;box-shadow:0 4px 14px #315db444; }
+.konnet-reference-create svg { width:25px;height:25px; }
+.konnet-create-page { background:#fff!important;color:#17233E!important; }
+.konnet-create-header { height:58px;border-bottom:1px solid #E5E9F2; }
+.konnet-share-link { color:#315DB4; }
+.konnet-create-sheet { background:#fff; }
+.konnet-format-icon { color:#315DB4;border-color:#DCE4F5; }
+.konnet-editor-tools button.active,.konnet-editor-publish { background:#315DB4;border-color:#315DB4; }
