@@ -66,7 +66,7 @@ export default function NotificationToast() {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [currentUser?.id, getUserById]);
+  }, [currentUser?.id]);
 
   if (!toasts.length) return null;
   return (
