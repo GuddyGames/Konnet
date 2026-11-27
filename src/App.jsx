@@ -76,7 +76,7 @@ export default function App() {
   useEffect(() => {
     if (!currentUser) return;
     return startPresenceHeartbeat(currentUser.id);
-  }, [currentUser]);
+  }, [currentUser?.id]);
 
   if (authLoading) {
     return (
